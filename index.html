@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calcul des antécédents (Auto/Moto)</title>
+  <style>
+    :root{
+      --bg: #ffffff;
+      --text: #111;
+      --muted: #666;
+      --card: #ffffff;
+      --border: #ddd;
+      --border2: #eee;
+      --tableBorder: #ccc;
+      --thBg: #f7f7f7;
+      --btnDanger: #ff4444;
+      --btnDangerHover: #cc0000;
+      --canvasBorder: #eee;
+      --updateBg: #ffdddd;
+      --updateText: #a00;
+      --updateBorder: #a00;
+      --link: #0b3d91;
+    }
+    body.dark{
+      --bg: #0f1216;
+      --text: #e8eaed;
+      --muted: #a6adb7;
+      --card: #161b22;
+      --border: #2b313a;
+      --border2: #232a33;
+      --tableBorder: #2b313a;
+      --thBg: #1d2430;
+      --btnDanger: #d63a3a;
+      --btnDangerHover: #b02b2b;
+      --canvasBorder: #2b313a;
+      --updateBg: #3a1b1b;
+      --updateText: #ffb4b4;
+      --updateBorder: #a64a4a;
+      --link: #8ab4f8;
+    }
+
+    html, body { height: 100%; margin: 0; }
+    body { font-family: Arial, sans-serif; overflow: hidden; background: var(--bg); color: var(--text); }
+    * { box-sizing: border-box; }
+
+    .app{
+      height: 100vh;
+      display: flex;
+      gap: 14px;
+      padding: 14px;
+      align-items: stretch;
+      overflow: auto;
+    }
+    .left{
+      flex: 1 1 680px;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .right{
+      flex: 0 1 420px;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-left: 1px solid var(--border);
+      padding-left: 14px;
+      position: relative;
+    }
+
+    h1 { font-size: 18px; margin: 0; }
+    h2 { font-size: 14px; margin: 0; }
+
+    .titleAccent{ color:#e41c7a; }
+
+    .explication { font-size: 12px; font-style: italic; color: var(--muted); }
+    .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    label { font-size: 12px; }
+
+    input[type="text"] { width: 98px; text-align: center; padding: 3px 4px; background: var(--card); color: var(--text); border: 1px solid var(--tableBorder); border-radius: 6px; }
+    input[type="checkbox"] { transform: translateY(1px); }
+
+    .tableScroll{
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      background: var(--card);
+    }
+
+    table { width: max-content; min-width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th, td { border: 1px solid var(--tableBorder); padding: 3px 4px; text-align: center; font-size: 12px; }
+
+    /* En-têtes uniquement sur les tableaux stylés */
+    .tableStyled th{
+      background-color:#414141;
+      color:#ffffff;
+    }
+
+    td:nth-child(1), th:nth-child(1) { width: 26px; }
+    td:nth-child(2), th:nth-child(2) { width: 70px; }
+    td:nth-child(5), th:nth-child(5) { width: 54px; }
+    td:nth-child(6), th:nth-child(6) { width: 86px; }
+
+    select { width: 100%; max-width: 100%; font-size: 12px; padding: 2px 2px; margin: 0; display: block; background: var(--card); color: var(--text); border: 1px solid var(--tableBorder); border-radius: 6px; }
+    .crmInput { width: 100%; max-width: 100%; padding: 2px 3px; text-align: center; display: block; background: var(--card); color: var(--text); border: 1px solid var(--tableBorder); border-radius: 6px; }
+
+    .result { font-weight: bold; font-size: 13px; }
+    .muted { font-size: 12px; color: var(--muted); }
+    .error { color: #ff6b6b; font-size: 12px; white-space: pre-line; }
+
+    button { padding: 7px 12px; cursor: pointer; font-size: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); }
+    #btnClear { background-color: var(--btnDanger); color: white; border: none; }
+    #btnClear:hover { background-color: var(--btnDangerHover); }
+
+    .card { border: 1px solid var(--border); border-radius: 8px; padding: 10px; background: var(--card); }
+    canvas { width: 100%; height: 136px; border: 1px solid var(--canvasBorder); border-radius: 6px; display: block; background: var(--card); }
+
+    .cardSmall { padding: 10px; }
+    .indepInputs input[type="text"] { width: 110px; }
+
+    .interruptions {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #ff8d8d;
+      line-height: 1.25;
+      max-height: 88px;
+      overflow: auto;
+      border-top: 1px dashed var(--border2);
+      padding-top: 6px;
+      white-space: pre-line;
+    }
+    .interruptionsTitle { font-weight: bold; margin-bottom: 2px; }
+
+    #updateBanner{
+      display:none;
+      background: var(--updateBg);
+      color: var(--updateText);
+      padding:8px 10px;
+      border:1px solid var(--updateBorder);
+      border-radius:8px;
+      font-size:12px;
+      line-height:1.25;
+    }
+    #updateBanner a{ color: var(--link); font-weight:bold; text-decoration: underline; }
+    #updateHowto{
+      margin-top: 6px;
+      color: var(--updateText);
+      opacity: 0.95;
+    }
+
+    #crmTableWrap{ display:none; margin-top: 10px; }
+    #crmTableWrap table{ width: 100%; min-width: 0; table-layout: auto; }
+    #crmTableWrap th, #crmTableWrap td{ font-size: 12px; padding: 5px 6px; }
+
+    .notesBox{ display:flex; flex-direction:column; }
+    .notesBox textarea{
+      flex: 1;
+      min-height: 84px;
+      resize: vertical;
+      font-size: 12px;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      outline: none;
+    }
+
+    .credit{
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      font-size: 11px;
+      color: var(--muted);
+      background: color-mix(in oklab, var(--card) 85%, transparent);
+      border: 1px solid var(--border2);
+      padding: 6px 8px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 1100px){
+      body { overflow: auto; }
+      .app { flex-direction: column; }
+      .right { border-left: none; padding-left: 0; }
+      .credit{ position: static; margin-top: 8px; align-self: flex-end; }
+    }
+
+    /* v0.20: inputs dates pleine largeur dans le tableau des périodes */
+    #periodsTable input[type="text"]{
+      width: 100%;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="left">
+      <div class="row" style="justify-content: space-between; gap: 10px;">
+        <h1>Calcul des antécédents <span class="titleAccent">(Auto / Moto)</span></h1>
+        <div class="row" style="gap:8px;">
+          <button id="btnDark" type="button" title="Basculer en mode sombre">Mode sombre</button>
+          <button id="btnCrmTable" type="button" title="Afficher/Masquer le tableau CRM">Tableau CRM</button>
+        </div>
+      </div>
+
+      <div id="updateBanner">
+        <div>
+          <span id="updateText"></span>
+          &nbsp; <a id="updateLink" href="#" target="_blank" rel="noopener">Télécharger la version à jour</a>
+        </div>
+        <div id="updateHowto">
+          Procédure : télécharge le nouveau fichier, puis remplace l'ancien fichier HTML sur ton poste (même dossier / même nom si possible), et rouvre la page.
+        </div>
+      </div>
+
+      <div class="card cardSmall" id="crmTableWrap">
+        <h2>Évolution standard du CRM</h2>
+        <div class="muted" style="margin-top:6px;">
+          Tableau standard (valeurs arrondies) : 0 an = 1,00 ; 13 ans = 0,50.
+        </div>
+        <div class="tableScroll" style="margin-top:8px;">
+          <table id="crmTable" class="tableStyled">
+            <thead>
+              <tr><th>Année sans sinistre</th><th>CRM</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="row">
+        <label for="dateEffet">Date d'effet :</label>
+        <input type="text" id="dateEffet" maxlength="10" placeholder="11/02/2026" />
+        <label><input type="checkbox" id="moto" /> Case moto (fenêtre = 24 mois, Auto et Moto)</label>
+        <button id="btnClear" type="button">Effacer</button>
+      </div>
+
+      <div class="tableScroll">
+        <table id="periodsTable" class="tableStyled">
+          <thead>
+            <tr>
+              <th>#</th><th>Type</th><th>Début</th><th>Fin</th><th>Mois</th><th>CRM résiliation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td><select id="type1"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb1" maxlength="10"></td><td><input type="text" id="fin1" maxlength="10"></td><td id="mois1"></td><td><input class="crmInput" type="text" id="crm1" maxlength="8"></td></tr>
+            <tr><td>2</td><td><select id="type2"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb2" maxlength="10"></td><td><input type="text" id="fin2" maxlength="10"></td><td id="mois2"></td><td><input class="crmInput" type="text" id="crm2" maxlength="8"></td></tr>
+            <tr><td>3</td><td><select id="type3"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb3" maxlength="10"></td><td><input type="text" id="fin3" maxlength="10"></td><td id="mois3"></td><td><input class="crmInput" type="text" id="crm3" maxlength="8"></td></tr>
+            <tr><td>4</td><td><select id="type4"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb4" maxlength="10"></td><td><input type="text" id="fin4" maxlength="10"></td><td id="mois4"></td><td><input class="crmInput" type="text" id="crm4" maxlength="8"></td></tr>
+            <tr><td>5</td><td><select id="type5"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb5" maxlength="10"></td><td><input type="text" id="fin5" maxlength="10"></td><td id="mois5"></td><td><input class="crmInput" type="text" id="crm5" maxlength="8"></td></tr>
+            <tr><td>6</td><td><select id="type6"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb6" maxlength="10"></td><td><input type="text" id="fin6" maxlength="10"></td><td id="mois6"></td><td><input class="crmInput" type="text" id="crm6" maxlength="8"></td></tr>
+            <tr><td>7</td><td><select id="type7"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb7" maxlength="10"></td><td><input type="text" id="fin7" maxlength="10"></td><td id="mois7"></td><td><input class="crmInput" type="text" id="crm7" maxlength="8"></td></tr>
+            <tr><td>8</td><td><select id="type8"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb8" maxlength="10"></td><td><input type="text" id="fin8" maxlength="10"></td><td id="mois8"></td><td><input class="crmInput" type="text" id="crm8" maxlength="8"></td></tr>
+            <tr><td>9</td><td><select id="type9"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb9" maxlength="10"></td><td><input type="text" id="fin9" maxlength="10"></td><td id="mois9"></td><td><input class="crmInput" type="text" id="crm9" maxlength="8"></td></tr>
+            <tr><td>10</td><td><select id="type10"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb10" maxlength="10"></td><td><input type="text" id="fin10" maxlength="10"></td><td id="mois10"></td><td><input class="crmInput" type="text" id="crm10" maxlength="8"></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="result" id="totalMois"></div>
+      <div class="result" id="interruptionTxt"></div>
+      <div class="error" id="errors"></div>
+
+      <div class="card cardSmall">
+        <h2>Calcul indépendant d'une période</h2>
+        <div class="row indepInputs" style="margin-top:6px;">
+          <label for="debIndep">Début :</label>
+          <input type="text" id="debIndep" maxlength="10" placeholder="01/01/2025">
+          <label for="finIndep">Fin :</label>
+          <input type="text" id="finIndep" maxlength="10" placeholder="01/01/2026">
+        </div>
+        <div id="resultIndep" class="result" style="margin-top:8px;"></div>
+        <div class="muted">Résultat en années / mois / jours (calcul calendaire).</div>
+      </div>
+
+      <div class="card cardSmall">
+        <h2>Date d'envoi loi Hamon</h2>
+        <div class="row" style="margin-top:6px;">
+          <label for="dateEnvoiHamon">Date d'envoi :</label>
+          <input type="text" id="dateEnvoiHamon" maxlength="10" placeholder="16/02/2026">
+        </div>
+        <div id="resultHamon" class="result" style="margin-top:8px;"></div>
+        <div class="muted">Date d'effet chez Mieux Assuré = date d'envoi + 33 jours.</div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="card" id="cardAuto">
+        <h2>Frise AUTO</h2>
+        <div class="muted" id="legendAuto" style="margin:6px 0 6px 0;"></div>
+        <canvas id="canvasAuto" width="420" height="136"></canvas>
+        <div class="interruptions" id="interruptionsAuto"></div>
+      </div>
+
+      <div class="card" id="cardMoto" style="display:none;">
+        <h2>Frise MOTO</h2>
+        <div class="muted" id="legendMoto" style="margin:6px 0 6px 0;"></div>
+        <canvas id="canvasMoto" width="420" height="136"></canvas>
+        <div class="interruptions" id="interruptionsMoto"></div>
+      </div>
+
+      <div class="card cardSmall notesBox">
+        <h2>Notes</h2>
+        <div class="muted" style="margin-top:6px;">Champ libre (effacé par le bouton Effacer).</div>
+        <textarea id="notes" placeholder="Notes / observations..."></textarea>
+      </div>
+
+      <div class="credit" id="creditBox"></div>
+    </div>
+  </div>
+
+  <script>
+    const LOCAL_VERSION = "0.20";
+    const VERSION_URL = "https://gist.githubusercontent.com/Lemtosh/ac7fc859fe26f28a17f86fa73c4a4e95/raw/version.json";
+
+    function setCredit(){
+      document.getElementById('creditBox').textContent = `Création : Johann PHILIPPON — v${LOCAL_VERSION}`;
+    }
+
+    function cmpVersion(a, b) {
+      const pa = String(a).split('.').map(n => parseInt(n, 10) || 0);
+      const pb = String(b).split('.').map(n => parseInt(n, 10) || 0);
+      const len = Math.max(pa.length, pb.length);
+      for (let i = 0; i < len; i++) {
+        const x = pa[i] ?? 0, y = pb[i] ?? 0;
+        if (x > y) return 1;
+        if (x < y) return -1;
+      }
+      return 0;
+    }
+
+    async function checkForUpdate() {
+      try {
+        const res = await fetch(VERSION_URL, { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        const remoteVersion = data?.version;
+        const downloadUrl = data?.downloadUrl;
+
+        if (remoteVersion && downloadUrl && cmpVersion(remoteVersion, LOCAL_VERSION) > 0) {
+          document.getElementById("updateText").textContent =
+            `Nouvelle version disponible (${remoteVersion}). Vous utilisez la ${LOCAL_VERSION}.`;
+          document.getElementById("updateLink").href = downloadUrl;
+          document.getElementById("updateBanner").style.display = "block";
+        }
+      } catch (e) {}
+    }
+
+    function applyTheme(isDark) {
+      document.body.classList.toggle('dark', !!isDark);
+      const btn = document.getElementById('btnDark');
+      btn.textContent = document.body.classList.contains('dark') ? 'Mode clair' : 'Mode sombre';
+    }
+    function initTheme() {
+      const saved = localStorage.getItem('theme');
+      if (saved === 'dark') applyTheme(true);
+      else if (saved === 'light') applyTheme(false);
+      else applyTheme(false);
+    }
+    function toggleTheme() {
+      const isDark = !document.body.classList.contains('dark');
+      applyTheme(isDark);
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      calculer();
+    }
+
+    const CRM_TABLE = [
+      { year: 0,  crm: 1.00 },
+      { year: 1,  crm: 0.95 },
+      { year: 2,  crm: 0.90 },
+      { year: 3,  crm: 0.85 },
+      { year: 4,  crm: 0.80 },
+      { year: 5,  crm: 0.76 },
+      { year: 6,  crm: 0.72 },
+      { year: 7,  crm: 0.68 },
+      { year: 8,  crm: 0.64 },
+      { year: 9,  crm: 0.60 },
+      { year: 10, crm: 0.57 },
+      { year: 11, crm: 0.54 },
+      { year: 12, crm: 0.51 },
+      { year: 13, crm: 0.50 }
+    ];
+    function buildCrmEvolutionRows(){ return CRM_TABLE.slice(); }
+    function renderCrmTable(){
+      const tbody = document.querySelector('#crmTable tbody');
+      tbody.innerHTML = '';
+      buildCrmEvolutionRows().forEach(r => {
+        const tr = document.createElement('tr');
+        const tdY = document.createElement('td');
+        const tdC = document.createElement('td');
+        tdY.textContent = String(r.year);
+        tdC.textContent = String(r.crm.toFixed(2)).replace('.', ',');
+        tr.appendChild(tdY);
+        tr.appendChild(tdC);
+        tbody.appendChild(tr);
+      });
+    }
+    function toggleCrmTable(){
+      const wrap = document.getElementById('crmTableWrap');
+      const isOpen = wrap.style.display === 'block';
+      wrap.style.display = isOpen ? 'none' : 'block';
+      document.getElementById('btnCrmTable').textContent = isOpen ? 'Tableau CRM' : 'Masquer tableau CRM';
+      if (!isOpen) renderCrmTable();
+    }
+
+    const GLUE_DAYS = 1;
+
+    function toUtcNoonMs(date) { return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0, 0); }
+    function addDaysUtcNoon(date, days) {
+      const t = toUtcNoonMs(date) + days * 24 * 60 * 60 * 1000;
+      const d = new Date(t);
+      return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+    }
+
+    function parseDateFlexible(str) {
+      if (!str) return null;
+      const s = String(str).trim();
+      if (s === "") return null;
+      const digits = s.replace(/\D/g, '');
+      if (!(digits.length === 6 || digits.length === 8)) return null;
+      const dd = parseInt(digits.slice(0, 2), 10);
+      const mm = parseInt(digits.slice(2, 4), 10);
+      let yyyy = digits.length === 6 ? 2000 + parseInt(digits.slice(4, 6), 10) : parseInt(digits.slice(4, 8), 10);
+      const monthIndex = mm - 1;
+      const d = new Date(yyyy, monthIndex, dd);
+      if (d.getFullYear() !== yyyy || d.getMonth() !== monthIndex || d.getDate() !== dd) return null;
+      return d;
+    }
+    function formatDateFR(d) {
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      return `${dd}/${mm}/${d.getFullYear()}`;
+    }
+    function addMonths(date, n) { const d = new Date(date.getTime()); d.setMonth(d.getMonth() + n); return d; }
+
+    function extraMonthsFromRemainderDays(remDays) {
+      if (!Number.isFinite(remDays) || remDays < 15) return 0;
+      return Math.ceil((remDays - 14) / 30);
+    }
+    function monthsAndRemainderDays(start, end) {
+      if (end < start) return { months: 0, remDays: 0 };
+      let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+      let anchor = new Date(start.getFullYear(), start.getMonth() + months, start.getDate());
+      if (anchor > end) { months -= 1; anchor = new Date(start.getFullYear(), start.getMonth() + months, start.getDate()); }
+      const remDays = Math.floor((end - anchor) / (1000 * 60 * 60 * 24));
+      return { months: Math.max(0, months), remDays: Math.max(0, remDays) };
+    }
+    function totalMonthsAcrossMerged(mergedIntervals) {
+      let fullMonths = 0, remDaysTotal = 0;
+      mergedIntervals.forEach(inter => {
+        const r = monthsAndRemainderDays(inter.start, inter.end);
+        fullMonths += r.months;
+        remDaysTotal += r.remDays;
+      });
+      const extra = extraMonthsFromRemainderDays(remDaysTotal);
+      return { fullMonths, remDaysTotal, extra, total: fullMonths + extra };
+    }
+
+    function diffYMDCalendar(start, end) {
+      if (end < start) return null;
+      let years = end.getFullYear() - start.getFullYear();
+      let months = end.getMonth() - start.getMonth();
+      let days = end.getDate() - start.getDate();
+      if (days < 0) {
+        months -= 1;
+        const lastDayStartMonth = new Date(start.getFullYear(), start.getMonth() + 1, 0).getDate();
+        days += lastDayStartMonth;
+      }
+      if (months < 0) { years -= 1; months += 12; }
+      return { years, months, days };
+    }
+
+    function calculIndep() {
+      const out = document.getElementById('resultIndep');
+      const deb = parseDateFlexible(document.getElementById('debIndep').value);
+      const fin = parseDateFlexible(document.getElementById('finIndep').value);
+      out.textContent = '';
+      if (!deb && !fin) return;
+      if (!deb || !fin) { out.textContent = 'Dates invalides.'; return; }
+      if (fin < deb) { out.textContent = 'Date fin antérieure à date début.'; return; }
+      const r = diffYMDCalendar(deb, fin);
+      out.textContent = `${r.years} an(s), ${r.months} mois, ${r.days} jour(s) (du ${formatDateFR(deb)} au ${formatDateFR(fin)}).`;
+    }
+
+    function calculHamon() {
+      const out = document.getElementById('resultHamon');
+      const d = parseDateFlexible(document.getElementById('dateEnvoiHamon').value);
+      out.textContent = '';
+      if (!d) {
+        if (String(document.getElementById('dateEnvoiHamon').value || '').trim() === '') return;
+        out.textContent = 'Date invalide.';
+        return;
+      }
+      const eff = addDaysUtcNoon(d, 33);
+      out.textContent = `Date d'effet Mieux Assuré : ${formatDateFR(eff)} (J+33).`;
+    }
+
+    function intersectInterval(deb, fin, minDate, maxDate) {
+      if (fin < minDate || deb > maxDate) return null;
+      const start = deb < minDate ? minDate : deb;
+      const end = fin > maxDate ? maxDate : fin;
+      return { start, end };
+    }
+
+    function mergeIntervals(intervals) {
+      if (intervals.length === 0) return [];
+      intervals.sort((a, b) => a.start - b.start);
+      const merged = [];
+      let current = { start: new Date(intervals[0].start), end: new Date(intervals[0].end) };
+      for (let i = 1; i < intervals.length; i++) {
+        const next = intervals[i];
+        const currentEndPlusGlue = addDaysUtcNoon(current.end, GLUE_DAYS);
+        if (next.start <= currentEndPlusGlue) {
+          if (next.end > current.end) current.end = new Date(next.end);
+        } else {
+          merged.push(current);
+          current = { start: new Date(next.start), end: new Date(next.end) };
+        }
+      }
+      merged.push(current);
+      return merged;
+    }
+
+    function overlapsOrGlued(a, b) {
+      const aEndPlus = addDaysUtcNoon(a.end, GLUE_DAYS);
+      const bEndPlus = addDaysUtcNoon(b.end, GLUE_DAYS);
+      return (a.start <= bEndPlus) && (b.start <= aEndPlus);
+    }
+    function isOverlapped(intervals, idx) {
+      const a = intervals[idx];
+      for (let j = 0; j < intervals.length; j++) {
+        if (j === idx) continue;
+        if (overlapsOrGlued(a, intervals[j])) return true;
+      }
+      return false;
+    }
+
+    function computeGapsWithinWindow(windowStart, windowEnd, mergedIntervals) {
+      const gaps = [];
+      let cursor = new Date(windowStart);
+      for (const inter of mergedIntervals) {
+        if (inter.start > cursor) gaps.push({ start: new Date(cursor), end: new Date(inter.start) });
+        if (inter.end > cursor) cursor = new Date(inter.end);
+      }
+      if (cursor < windowEnd) gaps.push({ start: new Date(cursor), end: new Date(windowEnd) });
+      return gaps.filter(g => g.end > g.start);
+    }
+    function renderInterruptions(elId, gaps) {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      if (!gaps || gaps.length === 0) { el.innerHTML = `<div class="interruptionsTitle">Interruptions :</div>Aucune.`; return; }
+      const lines = gaps.map(g => `- ${formatDateFR(g.start)} → ${formatDateFR(g.end)}`);
+      el.innerHTML = `<div class="interruptionsTitle">Interruptions :</div>${lines.join('\n')}`;
+    }
+
+    function clearCanvas(canvasId, legendId, message) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      document.getElementById(legendId).textContent = message || '';
+    }
+
+    function rectsOverlap(r1, r2) {
+      return !(r2.x > r1.x + r1.w || r2.x + r2.w < r1.x || r2.y > r1.y + r1.h || r2.y + r2.h < r1.y);
+    }
+
+    function placeTextAvoiding(ctx, text, x, levelDefs, placedRects, cssW, options) {
+      const font = options.font || '11px Arial';
+      const color = options.color || '#000';
+      const pad = options.pad ?? 3;
+      const approxH = options.h ?? 12;
+      const preferredOrder = options.preferredOrder || [0,1,2,3];
+
+      ctx.font = font;
+      const w = ctx.measureText(text).width;
+
+      for (const li of preferredOrder) {
+        const lvl = levelDefs[li];
+        const rect = {
+          x: x - (w/2) - pad,
+          y: (lvl.baseline === 'top') ? lvl.y : (lvl.y - approxH),
+          w: w + 2*pad,
+          h: approxH + 2
+        };
+        rect.x = Math.max(0, Math.min(cssW - rect.w, rect.x));
+
+        let ok = true;
+        for (const r of placedRects) {
+          if (rectsOverlap(rect, r)) { ok = false; break; }
+        }
+        if (!ok) continue;
+
+        placedRects.push(rect);
+        ctx.fillStyle = color;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = lvl.baseline;
+        const drawX = rect.x + rect.w / 2;
+        ctx.fillText(text, drawX, lvl.y);
+        return { placed: true, rect };
+      }
+      return { placed: false };
+    }
+
+    function drawTimeline(canvasId, legendId, windowStart, windowEnd, mergedIntervals, label, crmMarkers) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+
+      const cssW = canvas.clientWidth || 420;
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(cssW * ratio);
+      canvas.height = Math.floor(136 * ratio);
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+      const cssH = 136;
+      ctx.clearRect(0, 0, cssW, cssH);
+
+      const padL = 14, padR = 14;
+      const yLine = 68;
+      const lineW = cssW - padL - padR;
+
+      const t0 = windowStart.getTime();
+      const t1 = windowEnd.getTime();
+      const span = Math.max(1, t1 - t0);
+
+      function xOf(date) {
+        const t = date.getTime();
+        const p = (t - t0) / span;
+        return padL + Math.max(0, Math.min(1, p)) * lineW;
+      }
+
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(padL, yLine);
+      ctx.lineTo(padL + lineW, yLine);
+      ctx.stroke();
+
+      const isDark = document.body.classList.contains('dark');
+      const windowTextColor = isDark ? '#e8eaed' : '#111';
+
+      ctx.fillStyle = windowTextColor;
+      ctx.font = '12px Arial';
+      ctx.textBaseline = 'alphabetic';
+      ctx.textAlign = 'left';
+      ctx.fillText(formatDateFR(windowStart), padL, 20);
+      ctx.textAlign = 'right';
+      ctx.fillText(formatDateFR(windowEnd), padL + lineW, 20);
+
+      ctx.strokeStyle = '#d32f2f';
+      ctx.lineWidth = 14;
+      ctx.lineCap = 'butt';
+      ctx.beginPath();
+      ctx.moveTo(padL, yLine);
+      ctx.lineTo(padL + lineW, yLine);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#2e7d32';
+      ctx.lineWidth = 14;
+      ctx.lineCap = 'butt';
+      mergedIntervals.forEach(inter => {
+        const xs = xOf(inter.start);
+        const xe = xOf(inter.end);
+        if (xe <= xs) return;
+        ctx.beginPath();
+        ctx.moveTo(xs, yLine);
+        ctx.lineTo(xe, yLine);
+        ctx.stroke();
+      });
+
+      ctx.font = '12px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      mergedIntervals.forEach(inter => {
+        const xs = xOf(inter.start);
+        const xe = xOf(inter.end);
+        if ((xe - xs) < 22) return;
+        const r = monthsAndRemainderDays(inter.start, inter.end);
+        const months = r.months + extraMonthsFromRemainderDays(r.remDays);
+        if (months <= 0) return;
+        const mid = (xs + xe) / 2;
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+        ctx.fillText(String(months), mid + 1, yLine + 1);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(String(months), mid, yLine);
+      });
+
+      const placed = [];
+
+      ctx.font = '12px Arial';
+      const topY = 20;
+      const padBlock = 6;
+      const txtStart = formatDateFR(windowStart);
+      const txtEnd = formatDateFR(windowEnd);
+
+      const wStart = ctx.measureText(txtStart).width;
+      placed.push({ x: padL - padBlock, y: topY - 12, w: wStart + 2*padBlock, h: 16 });
+
+      const wEnd = ctx.measureText(txtEnd).width;
+      placed.push({ x: (padL + lineW) - wEnd - padBlock, y: topY - 12, w: wEnd + 2*padBlock, h: 16 });
+
+      const dateLevels = [
+        { y: yLine + 22, baseline: 'top' },
+        { y: yLine - 22, baseline: 'bottom' },
+        { y: yLine + 36, baseline: 'top' },
+        { y: yLine - 36, baseline: 'bottom' }
+      ];
+
+      const dateLabels = [];
+      mergedIntervals.forEach(inter => {
+        dateLabels.push({ x: xOf(inter.start), text: formatDateFR(inter.start) });
+        dateLabels.push({ x: xOf(inter.end),   text: formatDateFR(inter.end) });
+      });
+      dateLabels.sort((a, b) => a.x - b.x);
+
+      dateLabels.forEach((lab, idx) => {
+        if (idx > 0) {
+          const prev = dateLabels[idx - 1];
+          if (lab.text === prev.text && Math.abs(lab.x - prev.x) < 2) return;
+        }
+        const preferredOrder = (idx % 2 === 0) ? [0,1,2,3] : [1,0,3,2];
+
+        const res = placeTextAvoiding(ctx, lab.text, lab.x, dateLevels, placed, cssW, {
+          font: '11px Arial', color: '#2e7d32', preferredOrder, pad: 3, h: 12
+        });
+
+        if (!res.placed) return;
+
+        ctx.strokeStyle = '#2e7d32';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(lab.x, yLine - 18);
+        ctx.lineTo(lab.x, yLine + 18);
+        ctx.stroke();
+      });
+
+      const crmLevels = [
+        { y: yLine - 44, baseline: 'bottom' },
+        { y: yLine + 44, baseline: 'top' },
+        { y: yLine - 58, baseline: 'bottom' },
+        { y: yLine + 58, baseline: 'top' }
+      ];
+
+      if (Array.isArray(crmMarkers) && crmMarkers.length > 0) {
+        crmMarkers.forEach((m, idx) => {
+          const x = xOf(m.at);
+
+          ctx.strokeStyle = '#0b3d91';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(x, yLine - 20);
+          ctx.lineTo(x, yLine - 4);
+          ctx.stroke();
+
+          const preferredOrder = (idx % 2 === 0) ? [0,1,2,3] : [1,0,3,2];
+
+          placeTextAvoiding(ctx, String(m.crm), x, crmLevels, placed, cssW, {
+            font: '12px Arial', color: '#0b3d91', preferredOrder, pad: 3, h: 12
+          });
+        });
+      }
+
+      document.getElementById(legendId).textContent =
+        `${label} : ${formatDateFR(windowStart)} → ${formatDateFR(windowEnd)}`;
+    }
+
+    function effacerTout() {
+      document.getElementById('dateEffet').value = '';
+      document.getElementById('moto').checked = false;
+
+      for (let i = 1; i <= 10; i++) {
+        document.getElementById('type' + i).value = 'AUTO';
+        document.getElementById('deb' + i).value = '';
+        document.getElementById('fin' + i).value = '';
+        document.getElementById('crm' + i).value = '';
+        document.getElementById('mois' + i).textContent = '';
+      }
+
+      document.getElementById('totalMois').textContent = '';
+      document.getElementById('interruptionTxt').textContent = '';
+      document.getElementById('errors').textContent = '';
+
+      document.getElementById('debIndep').value = '';
+      document.getElementById('finIndep').value = '';
+      document.getElementById('resultIndep').textContent = '';
+
+      document.getElementById('dateEnvoiHamon').value = '';
+      document.getElementById('resultHamon').textContent = '';
+
+      document.getElementById('notes').value = '';
+
+      document.getElementById('cardMoto').style.display = 'none';
+
+      clearCanvas('canvasAuto', 'legendAuto', 'Renseigne une date d’effet pour afficher la frise.');
+      clearCanvas('canvasMoto', 'legendMoto', '');
+
+      document.getElementById('interruptionsAuto').textContent = '';
+      document.getElementById('interruptionsMoto').textContent = '';
+
+      calculer(); calculIndep(); calculHamon();
+    }
+
+    function calculer() {
+      const errorsEl = document.getElementById('errors');
+      const totalEl = document.getElementById('totalMois');
+      const interrupEl = document.getElementById('interruptionTxt');
+
+      errorsEl.textContent = '';
+      totalEl.textContent = '';
+      interrupEl.textContent = '';
+
+      for (let i = 1; i <= 10; i++) document.getElementById('mois' + i).textContent = '';
+
+      const dEffet = parseDateFlexible(document.getElementById('dateEffet').value);
+      const motoChecked = document.getElementById('moto').checked;
+
+      const refMonths = motoChecked ? 24 : 36;
+      document.getElementById('cardMoto').style.display = motoChecked ? 'block' : 'none';
+
+      let win = null;
+      if (dEffet) {
+        const end = new Date(dEffet.getFullYear(), dEffet.getMonth(), dEffet.getDate());
+        win = { start: addMonths(end, -refMonths), end };
+      }
+
+      const lineIntervalsAuto = [];
+      const lineIntervalsMoto = [];
+      const intervalsAuto = [];
+      const intervalsMoto = [];
+      let hasError = false;
+
+      for (let i = 1; i <= 10; i++) {
+        const type = document.getElementById('type' + i).value;
+        const debStr = document.getElementById('deb' + i).value.trim();
+        const finStr = document.getElementById('fin' + i).value.trim();
+        const crmStr = document.getElementById('crm' + i).value.trim();
+
+        if (!debStr && !finStr && !crmStr) continue;
+
+        const deb = parseDateFlexible(debStr);
+        const fin = parseDateFlexible(finStr);
+
+        if (!deb || !fin || fin < deb) {
+          document.getElementById('mois' + i).textContent = 'Erreur';
+          hasError = true;
+          continue;
+        }
+
+        let inter = { start: deb, end: fin, line: i, crm: crmStr };
+
+        if (win) {
+          const clipped = intersectInterval(deb, fin, win.start, win.end);
+          if (!clipped) { document.getElementById('mois' + i).textContent = '0'; continue; }
+          inter = { start: clipped.start, end: clipped.end, line: i, crm: crmStr };
+        }
+
+        const rLine = monthsAndRemainderDays(inter.start, inter.end);
+        document.getElementById('mois' + i).textContent = String(rLine.months + extraMonthsFromRemainderDays(rLine.remDays));
+
+        if (type === 'AUTO') { intervalsAuto.push({ start: inter.start, end: inter.end }); lineIntervalsAuto.push(inter); }
+        else { intervalsMoto.push({ start: inter.start, end: inter.end }); lineIntervalsMoto.push(inter); }
+      }
+
+      if (hasError) errorsEl.textContent = 'Erreurs détectées dans certaines lignes (dates invalides ou inversées).';
+
+      const mergedAuto = mergeIntervals(intervalsAuto);
+      const mergedMoto = mergeIntervals(intervalsMoto);
+
+      const autoAgg = totalMonthsAcrossMerged(mergedAuto);
+      const motoAgg = totalMonthsAcrossMerged(mergedMoto);
+
+      if (!dEffet) {
+        clearCanvas('canvasAuto', 'legendAuto', 'Renseigne une date d’effet pour afficher la frise.');
+        clearCanvas('canvasMoto', 'legendMoto', '');
+        renderInterruptions('interruptionsAuto', []);
+        renderInterruptions('interruptionsMoto', []);
+        totalEl.textContent = motoChecked
+          ? `Antécédents (sans fenêtre) : Auto = ${autoAgg.total} mois ; Moto = ${motoAgg.total} mois.`
+          : `Antécédents (sans fenêtre) : Auto = ${autoAgg.total} mois.`;
+        interrupEl.textContent = `Interruption : nécessite une date d’effet (fenêtre ${refMonths} mois).`;
+        return;
+      }
+
+      function buildCrmMarkers(lineIntervals) {
+        const intervalsOnly = lineIntervals.map(x => ({ start: x.start, end: x.end }));
+        const markers = [];
+        for (let idx = 0; idx < lineIntervals.length; idx++) {
+          const li = lineIntervals[idx];
+          if (!li.crm) continue;
+          if (isOverlapped(intervalsOnly, idx)) continue;
+          markers.push({ at: li.end, crm: li.crm });
+        }
+        markers.sort((a, b) => a.at - b.at);
+        return markers;
+      }
+
+      drawTimeline('canvasAuto', 'legendAuto', win.start, win.end, mergedAuto, `AUTO (${refMonths} mois)`, buildCrmMarkers(lineIntervalsAuto));
+      if (motoChecked) drawTimeline('canvasMoto', 'legendMoto', win.start, win.end, mergedMoto, `MOTO (${refMonths} mois)`, buildCrmMarkers(lineIntervalsMoto));
+      else clearCanvas('canvasMoto', 'legendMoto', '');
+
+      renderInterruptions('interruptionsAuto', computeGapsWithinWindow(win.start, win.end, mergedAuto));
+      if (motoChecked) renderInterruptions('interruptionsMoto', computeGapsWithinWindow(win.start, win.end, mergedMoto));
+      else document.getElementById('interruptionsMoto').textContent = '';
+
+      const interAuto = Math.max(0, refMonths - autoAgg.total);
+      if (motoChecked) {
+        const interMoto = Math.max(0, refMonths - motoAgg.total);
+        totalEl.textContent = `Antécédents : Auto = ${autoAgg.total} mois ; Moto = ${motoAgg.total} mois.`;
+        interrupEl.textContent = `Interruption estimée : Auto = ${interAuto} mois ; Moto = ${interMoto} mois.`;
+      } else {
+        totalEl.textContent = `Antécédents : Auto = ${autoAgg.total} mois.`;
+        interrupEl.textContent = `Interruption estimée : ${interAuto} mois (${refMonths} - ${autoAgg.total}).`;
+      }
+    }
+
+    function initCanvases(){
+      clearCanvas('canvasAuto', 'legendAuto', 'Renseigne une date d’effet pour afficher la frise.');
+      clearCanvas('canvasMoto', 'legendMoto', '');
+      renderInterruptions('interruptionsAuto', []);
+      renderInterruptions('interruptionsMoto', []);
+    }
+
+    document.getElementById('btnClear').addEventListener('click', effacerTout);
+    document.getElementById('btnDark').addEventListener('click', toggleTheme);
+    document.getElementById('btnCrmTable').addEventListener('click', toggleCrmTable);
+
+    document.querySelectorAll('input[type="text"], input[type="checkbox"], select').forEach(el => {
+      el.addEventListener('input', calculer);
+      el.addEventListener('change', calculer);
+    });
+    document.getElementById('debIndep').addEventListener('input', calculIndep);
+    document.getElementById('finIndep').addEventListener('input', calculIndep);
+    document.getElementById('dateEnvoiHamon').addEventListener('input', calculHamon);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      setCredit();
+      checkForUpdate();
+      initCanvases();
+      calculer(); calculIndep(); calculHamon();
+    });
+  </script>
+</body>
+</html>
