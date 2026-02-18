@@ -13,7 +13,6 @@
       --border: #ddd;
       --border2: #eee;
       --tableBorder: #ccc;
-      --thBg: #f7f7f7;
       --btnDanger: #ff4444;
       --btnDangerHover: #cc0000;
       --canvasBorder: #eee;
@@ -21,6 +20,18 @@
       --updateText: #a00;
       --updateBorder: #a00;
       --link: #0b3d91;
+
+      /* Frise (clair = couleurs d'origine) */
+      --timelineRed: #d32f2f;
+      --timelineGreen: #2e7d32;
+
+      /* Texte "bonus" */
+      --bonusText: rgba(0,0,0,0.60);
+      --bonusTextStroke: rgba(255,255,255,0.70);
+      --bonusTextDark: rgba(255,255,255,0.92);
+      --bonusTextStrokeDark: rgba(0,0,0,0.40);
+
+      --markerBlue: #0b3d91;
     }
     body.dark{
       --bg: #0f1216;
@@ -30,7 +41,6 @@
       --border: #2b313a;
       --border2: #232a33;
       --tableBorder: #2b313a;
-      --thBg: #1d2430;
       --btnDanger: #d63a3a;
       --btnDangerHover: #b02b2b;
       --canvasBorder: #2b313a;
@@ -38,6 +48,12 @@
       --updateText: #ffb4b4;
       --updateBorder: #a64a4a;
       --link: #8ab4f8;
+
+      /* Frise (sombre = pastel) */
+      --timelineRed: #FF746C;
+      --timelineGreen: #80EF80;
+
+      --markerBlue: #8ab4f8;
     }
 
     html, body { height: 100%; margin: 0; }
@@ -72,10 +88,8 @@
 
     h1 { font-size: 18px; margin: 0; }
     h2 { font-size: 14px; margin: 0; }
-
     .titleAccent{ color:#e41c7a; }
 
-    .explication { font-size: 12px; font-style: italic; color: var(--muted); }
     .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     label { font-size: 12px; }
 
@@ -94,7 +108,6 @@
     table { width: max-content; min-width: 100%; border-collapse: collapse; table-layout: fixed; }
     th, td { border: 1px solid var(--tableBorder); padding: 3px 4px; text-align: center; font-size: 12px; }
 
-    /* En-têtes uniquement sur les tableaux stylés */
     .tableStyled th{
       background-color:#414141;
       color:#ffffff;
@@ -120,7 +133,6 @@
     canvas { width: 100%; height: 136px; border: 1px solid var(--canvasBorder); border-radius: 6px; display: block; background: var(--card); }
 
     .cardSmall { padding: 10px; }
-    .indepInputs input[type="text"] { width: 110px; }
 
     .interruptions {
       margin-top: 8px;
@@ -146,17 +158,13 @@
       line-height:1.25;
     }
     #updateBanner a{ color: var(--link); font-weight:bold; text-decoration: underline; }
-    #updateHowto{
-      margin-top: 6px;
-      color: var(--updateText);
-      opacity: 0.95;
-    }
 
     #crmTableWrap{ display:none; margin-top: 10px; }
     #crmTableWrap table{ width: 100%; min-width: 0; table-layout: auto; }
     #crmTableWrap th, #crmTableWrap td{ font-size: 12px; padding: 5px 6px; }
 
     #crmToolWrap{ display:none; margin-top: 10px; }
+    #crmPermitWrap{ display:none; margin-top: 10px; }
 
     .notesBox{ display:flex; flex-direction:column; }
     .notesBox textarea{
@@ -172,39 +180,61 @@
       outline: none;
     }
 
-    .credit{
-      position: absolute;
-      right: 10px;
-      bottom: 10px;
-      font-size: 11px;
+    .crmTrail{
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed var(--border2);
+      font-size: 12px;
       color: var(--muted);
+      white-space: pre-line;
+    }
+    .crmTrail strong{ color: var(--text); }
+
+    /* Meta auteur */
+    .metaWrap{ margin-top: auto; display:flex; justify-content:flex-end; }
+    .metaBtn{
+      font-size: 11px; color: var(--muted);
       background: color-mix(in oklab, var(--card) 85%, transparent);
       border: 1px solid var(--border2);
-      padding: 6px 8px;
+      padding: 6px 10px; border-radius: 10px;
+      cursor: pointer; user-select: none;
+    }
+    .metaBtn:hover{ color: var(--text); }
+    .metaPanel{
+      display:none; margin-top: 8px;
+      border: 1px solid var(--border);
       border-radius: 10px;
-      white-space: nowrap;
+      padding: 10px;
+      padding-bottom: 64px; /* évite superposition avec le bouton thème */
+      background: var(--card);
+      color: var(--text);
+      font-size: 12px;
+      line-height: 1.35;
+      position: relative;
+      z-index: 10001;
+    }
+    .metaPanel .mutedLine{ color: var(--muted); font-size: 11px; }
+    .themeFab{ z-index: 9999; }
+
+    @media (max-width: 520px){
+      .metaPanel{ padding-bottom: 52px; }
     }
 
     @media (max-width: 1100px){
       body { overflow: auto; }
       .app { flex-direction: column; }
       .right { border-left: none; padding-left: 0; }
-      .credit{ position: static; margin-top: 8px; align-self: flex-end; }
     }
 
-    /* v0.20: inputs dates pleine largeur dans le tableau des périodes */
-    #periodsTable input[type="text"]{
-      width: 100%;
-      box-sizing: border-box;
-    }
+    #periodsTable input[type="text"]{ width: 100%; box-sizing: border-box; }
 
-    /* Bouton thème en bas à gauche */
+    /* Bouton thème */
     .themeFab{
       position: fixed;
       bottom: 12px;
       left: 12px;
-      width: 42px;
-      height: 42px;
+      width: 40px;
+      height: 40px;
       border-radius: 999px;
       display: inline-flex;
       align-items: center;
@@ -216,20 +246,46 @@
       box-shadow: 0 6px 18px rgba(0,0,0,0.12);
     }
     .themeFab:hover{ filter: brightness(0.98); }
-    #themeIcon{ font-size: 18px; line-height: 1; }
-
-    /* Outil CRM - historique */
-    .crmTrail{
-      margin-top: 6px;
-      padding-top: 6px;
-      border-top: 1px dashed var(--border2);
-      font-size: 12px;
-      color: var(--muted);
-      white-space: pre-line;
+    #themeIcon{ font-size: 17px; line-height: 1; }
+    @media (max-width: 520px){
+      .themeFab{ width: 32px; height: 32px; bottom: 8px; left: 8px; }
+      #themeIcon{ font-size: 14px; }
     }
-    .crmTrail strong{ color: var(--text); }
+
+    /* Info-bulle CRM résiliation */
+    .thInfoWrap{ display:inline-flex; align-items:center; justify-content:center; gap:6px; }
+    .infoBtn{
+      width: 18px; height: 18px; min-width: 18px; min-height: 18px;
+      padding: 0; border-radius: 50%;
+      font-size: 12px; line-height: 18px;
+      text-align:center;
+      border: 1px solid var(--border);
+      background: color-mix(in oklab, var(--card) 92%, transparent);
+      color: var(--muted);
+      cursor: pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .infoBtn:hover{ color: var(--text); }
+
+    .tooltip{
+      position: fixed;
+      display:none;
+      max-width: 280px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      box-shadow: 0 10px 26px rgba(0,0,0,0.20);
+      font-size: 12px;
+      line-height: 1.25;
+      z-index: 10000;
+    }
   </style>
 </head>
+
 <body>
   <div class="app">
     <div class="left">
@@ -239,10 +295,10 @@
         <div class="row" style="gap:8px;">
           <button id="btnCrmTable" type="button" title="Afficher/Masquer le tableau CRM">Tableau CRM</button>
           <button id="btnCrmTool" type="button" title="Afficher/Masquer l’outil de calcul CRM">Outil CRM</button>
+          <button id="btnCrmPermit" type="button" title="Afficher/Masquer l’outil CRM max via date de permis">CRM max (permis)</button>
         </div>
       </div>
 
-      <!-- Bouton thème flottant -->
       <button id="btnTheme" type="button" class="themeFab" aria-label="Basculer le thème" title="Basculer le thème">
         <span id="themeIcon" aria-hidden="true"></span>
       </button>
@@ -251,9 +307,6 @@
         <div>
           <span id="updateText"></span>
           &nbsp; <a id="updateLink" href="#" target="_blank" rel="noopener">Télécharger la version à jour</a>
-        </div>
-        <div id="updateHowto">
-          Procédure : télécharge le nouveau fichier, puis remplace l'ancien fichier HTML sur ton poste (même dossier / même nom si possible), et rouvre la page.
         </div>
       </div>
 
@@ -294,9 +347,24 @@
         </div>
       </div>
 
+      <div class="card cardSmall" id="crmPermitWrap">
+        <h2>CRM maximum (date de permis)</h2>
+        <div class="muted" style="margin-top:6px;">
+          Règle : on applique le tableau CRM. Une nouvelle “année” est accordée dès +9 mois sur l’année en cours.
+        </div>
+
+        <div class="row" style="margin-top:8px; gap:8px;">
+          <label for="permitDate">Date de permis :</label>
+          <input type="text" id="permitDate" maxlength="10" />
+          <div class="result" id="permitCrmResult" style="min-width:220px;"></div>
+        </div>
+
+        <div class="muted" id="permitCrmDetail" style="margin-top:6px;"></div>
+      </div>
+
       <div class="row">
         <label for="dateEffet">Date d'effet :</label>
-        <input type="text" id="dateEffet" maxlength="10" placeholder="11/02/2026" />
+        <input type="text" id="dateEffet" maxlength="10" />
         <label><input type="checkbox" id="moto" /> Case moto (fenêtre = 24 mois, Auto et Moto)</label>
         <button id="btnClear" type="button">Effacer</button>
       </div>
@@ -305,7 +373,17 @@
         <table id="periodsTable" class="tableStyled">
           <thead>
             <tr>
-              <th>#</th><th>Type</th><th>Début</th><th>Fin</th><th>Mois</th><th>CRM résiliation</th>
+              <th>#</th>
+              <th>Type</th>
+              <th>Début</th>
+              <th>Fin</th>
+              <th>Mois</th>
+              <th>
+                <span class="thInfoWrap">
+                  CRM résiliation
+                  <button id="crmInfoBtn" class="infoBtn" type="button" aria-label="Info CRM résiliation" title="Info">i</button>
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -329,24 +407,36 @@
 
       <div class="card cardSmall">
         <h2>Calcul indépendant d'une période</h2>
-        <div class="row indepInputs" style="margin-top:6px;">
+        <div class="row" style="margin-top:6px;">
           <label for="debIndep">Début :</label>
-          <input type="text" id="debIndep" maxlength="10" placeholder="01/01/2025">
+          <input type="text" id="debIndep" maxlength="10" >
           <label for="finIndep">Fin :</label>
-          <input type="text" id="finIndep" maxlength="10" placeholder="01/01/2026">
+          <input type="text" id="finIndep" maxlength="10" >
         </div>
         <div id="resultIndep" class="result" style="margin-top:8px;"></div>
         <div class="muted">Résultat en années / mois / jours (calcul calendaire).</div>
       </div>
 
       <div class="card cardSmall">
-        <h2>Date d'envoi loi Hamon</h2>
+        <h2>Hamon (Mieux Assuré)</h2>
         <div class="row" style="margin-top:6px;">
-          <label for="dateEnvoiHamon">Date d'envoi :</label>
-          <input type="text" id="dateEnvoiHamon" maxlength="10" placeholder="16/02/2026">
+          <label for="dateEnvoiHamon">Envoi :</label>
+          <input type="text" id="dateEnvoiHamon" maxlength="10">
         </div>
         <div id="resultHamon" class="result" style="margin-top:8px;"></div>
-        <div class="muted">Date d'effet chez Mieux Assuré = date d'envoi + 33 jours.</div>
+        <div class="muted">Effet = envoi + 33 jours.</div>
+      </div>
+
+      <div class="metaWrap">
+        <button id="btnMeta" class="metaBtn" type="button" aria-expanded="false">Infos auteur / version</button>
+      </div>
+      <div class="metaPanel" id="metaPanel">
+        <div><strong>© 2026 PHILLIPPON Johann</strong> — Tous droits réservés.</div>
+        <div style="margin-top:6px;">
+          Consultation autorisée. Toute reproduction/copie (y compris interne), modification/adaptation, diffusion/partage, ou usage commercial,
+          total ou partiel, est interdite sans autorisation écrite préalable de l’auteur.
+        </div>
+        <div class="mutedLine" style="margin-top:8px;" id="metaVersionLine"></div>
       </div>
     </div>
 
@@ -367,21 +457,16 @@
 
       <div class="card cardSmall notesBox">
         <h2>Notes</h2>
-        <div class="muted" style="margin-top:6px;">Champ libre (effacé par le bouton Effacer).</div>
         <textarea id="notes" placeholder="Notes / observations..."></textarea>
       </div>
-
-      <div class="credit" id="creditBox"></div>
     </div>
   </div>
 
-  <script>
-    const LOCAL_VERSION = "0.21";
-    const VERSION_URL = "https://gist.githubusercontent.com/Lemtosh/ac7fc859fe26f28a17f86fa73c4a4e95/raw/version.json";
+  <div id="crmTooltip" class="tooltip" role="dialog" aria-live="polite"></div>
 
-    function setCredit(){
-      document.getElementById('creditBox').textContent = `Création : Johann PHILIPPON — v${LOCAL_VERSION}`;
-    }
+  <script>
+    const LOCAL_VERSION = "0.22";
+    const VERSION_URL = "https://gist.githubusercontent.com/Lemtosh/ac7fc859fe26f28a17f86fa73c4a4e95/raw/version.json";
 
     function cmpVersion(a, b) {
       const pa = String(a).split('.').map(n => parseInt(n, 10) || 0);
@@ -412,13 +497,11 @@
       } catch (e) {}
     }
 
-    /* ===== Thème (bouton en bas à gauche + icônes) ===== */
+    /* ===== Thème ===== */
     function updateThemeButton(){
       const isDark = document.body.classList.contains('dark');
-      const icon = document.getElementById('themeIcon');
-      icon.textContent = isDark ? '☀' : '🌙';
+      document.getElementById('themeIcon').textContent = isDark ? '☀' : '🌙';
     }
-
     function applyTheme(isDark) {
       document.body.classList.toggle('dark', !!isDark);
       updateThemeButton();
@@ -436,6 +519,20 @@
       calculer();
     }
 
+    /* ===== Meta panel ===== */
+    function toggleMeta(){
+      const panel = document.getElementById('metaPanel');
+      const btn = document.getElementById('btnMeta');
+      const isOpen = panel.style.display === 'block';
+      panel.style.display = isOpen ? 'none' : 'block';
+      btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+      if (!isOpen) panel.scrollIntoView({ block: 'nearest' });
+    }
+    function renderMetaVersion(){
+      document.getElementById('metaVersionLine').textContent = `Version : v${LOCAL_VERSION}`;
+    }
+
+    /* ===== Tableau CRM (source) ===== */
     const CRM_TABLE = [
       { year: 0,  crm: 1.00 },
       { year: 1,  crm: 0.95 },
@@ -475,16 +572,16 @@
       if (!isOpen) renderCrmTable();
     }
 
-    /* ===== Outil CRM (cumulatif + historique + reset au focus input) ===== */
+    /* ===== Outil CRM (sinistres) ===== */
     const CRM_ACTIONS = [
       { key: 'none', label: 'Aucun sinistre responsable', factor: 0.95, short: '×0,95' },
       { key: '50',   label: 'Sinistre 50%',              factor: 1.125, short: '×1,125' },
       { key: '100',  label: 'Sinistre 100%',             factor: 1.25, short: '×1,25' }
     ];
 
-    let crmBaseValue = null;       // valeur saisie au départ
-    let crmCurrentValue = null;    // valeur courante après clics
-    let crmClicks = [];            // historique des clics (suite d'actions)
+    let crmBaseValue = null;
+    let crmCurrentValue = null;
+    let crmClicks = [];
 
     function toggleCrmTool(){
       const wrap = document.getElementById('crmToolWrap');
@@ -501,14 +598,8 @@
       if (!Number.isFinite(n)) return null;
       return n;
     }
-
-    function trunc2(n){
-      return Math.floor(n * 100) / 100;
-    }
-
-    function format2FR(n){
-      return String(n.toFixed(2)).replace('.', ',');
-    }
+    function trunc2(n){ return Math.floor(n * 100) / 100; }
+    function format2FR(n){ return String(n.toFixed(2)).replace('.', ','); }
 
     function resetCrmToolState(){
       crmBaseValue = null;
@@ -516,7 +607,6 @@
       crmClicks = [];
       updateCrmToolUI();
     }
-
     function getClicksSummary(){
       if (!crmClicks.length) return '';
       const counts = {};
@@ -529,7 +619,6 @@
       });
       return parts.join(' | ');
     }
-
     function updateCrmToolUI(){
       const resultEl = document.getElementById('crmToolResult');
       const trailEl = document.getElementById('crmToolTrail');
@@ -540,8 +629,6 @@
         trailEl.textContent = '';
         return;
       }
-
-      // Si l'utilisateur a tapé un CRM mais n'a pas encore cliqué, on l'affiche comme "base"
       if (crmBaseValue === null){
         crmBaseValue = inputVal;
         crmCurrentValue = inputVal;
@@ -549,41 +636,33 @@
 
       const baseTxt = `CRM départ : ${format2FR(trunc2(crmBaseValue))}`;
       const curTxt  = `Résultat : ${format2FR(trunc2(crmCurrentValue))}`;
-
-      resultEl.textContent = `${curTxt}`;
+      resultEl.textContent = curTxt;
 
       const summary = getClicksSummary();
-      if (!summary){
-        trailEl.innerHTML = `<strong>${baseTxt}</strong>\nAucune action appliquée.`;
-      } else {
-        trailEl.innerHTML = `<strong>${baseTxt}</strong>\nActions : ${summary}`;
-      }
+      if (!summary) trailEl.innerHTML = `<strong>${baseTxt}</strong>\nAucune action appliquée.`;
+      else trailEl.innerHTML = `<strong>${baseTxt}</strong>\nActions : ${summary}`;
     }
-
     function applyCrmAction(action){
-      const input = document.getElementById('crmToolInput');
-      const inputVal = parseCrmInput(input.value);
+      const inputVal = parseCrmInput(document.getElementById('crmToolInput').value);
       if (inputVal === null) return;
 
-      // si c'est le 1er clic après saisie, on initialise sur la valeur saisie
       if (crmBaseValue === null){
         crmBaseValue = inputVal;
         crmCurrentValue = inputVal;
         crmClicks = [];
       }
-
       crmCurrentValue = trunc2(crmCurrentValue * action.factor);
       crmClicks.push(action);
       updateCrmToolUI();
     }
 
-    const GLUE_DAYS = 1;
-
-    function toUtcNoonMs(date) { return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0, 0); }
-    function addDaysUtcNoon(date, days) {
-      const t = toUtcNoonMs(date) + days * 24 * 60 * 60 * 1000;
-      const d = new Date(t);
-      return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+    /* ===== CRM max (date permis) ===== */
+    function toggleCrmPermit(){
+      const wrap = document.getElementById('crmPermitWrap');
+      const isOpen = wrap.style.display === 'block';
+      wrap.style.display = isOpen ? 'none' : 'block';
+      document.getElementById('btnCrmPermit').textContent = isOpen ? 'CRM max (permis)' : 'Masquer CRM max (permis)';
+      if (!isOpen) updatePermitCrm();
     }
 
     function parseDateFlexible(str) {
@@ -605,12 +684,7 @@
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       return `${dd}/${mm}/${d.getFullYear()}`;
     }
-    function addMonths(date, n) { const d = new Date(date.getTime()); d.setMonth(d.getMonth() + n); return d; }
 
-    function extraMonthsFromRemainderDays(remDays) {
-      if (!Number.isFinite(remDays) || remDays < 15) return 0;
-      return Math.ceil((remDays - 14) / 30);
-    }
     function monthsAndRemainderDays(start, end) {
       if (end < start) return { months: 0, remDays: 0 };
       let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
@@ -619,54 +693,69 @@
       const remDays = Math.floor((end - anchor) / (1000 * 60 * 60 * 24));
       return { months: Math.max(0, months), remDays: Math.max(0, remDays) };
     }
-    function totalMonthsAcrossMerged(mergedIntervals) {
-      let fullMonths = 0, remDaysTotal = 0;
-      mergedIntervals.forEach(inter => {
-        const r = monthsAndRemainderDays(inter.start, inter.end);
-        fullMonths += r.months;
-        remDaysTotal += r.remDays;
-      });
-      const extra = extraMonthsFromRemainderDays(remDaysTotal);
-      return { fullMonths, remDaysTotal, extra, total: fullMonths + extra };
+
+    function computePermitYearsRounded(permitDate, today){
+      const r = monthsAndRemainderDays(permitDate, today);
+      const wholeYears = Math.floor(r.months / 12);
+      const monthsInCurrentYear = r.months % 12;
+
+      // Règle demandée : dès 9 mois dans l'année, on "accorde" une évolution (on passe à l'année suivante)
+      const roundedYears = wholeYears + (monthsInCurrentYear >= 9 ? 1 : 0);
+      return { wholeYears, monthsInCurrentYear, roundedYears, totalMonths: r.months, remDays: r.remDays };
     }
 
-    function diffYMDCalendar(start, end) {
-      if (end < start) return null;
-      let years = end.getFullYear() - start.getFullYear();
-      let months = end.getMonth() - start.getMonth();
-      let days = end.getDate() - start.getDate();
-      if (days < 0) {
-        months -= 1;
-        const lastDayStartMonth = new Date(start.getFullYear(), start.getMonth() + 1, 0).getDate();
-        days += lastDayStartMonth;
-      }
-      if (months < 0) { years -= 1; months += 12; }
-      return { years, months, days };
+    function getCrmForYears(years){
+      const y = Math.max(0, Math.min(13, years));
+      const row = CRM_TABLE.find(r => r.year === y) || CRM_TABLE[CRM_TABLE.length - 1];
+      return row.crm;
     }
 
-    function calculIndep() {
-      const out = document.getElementById('resultIndep');
-      const deb = parseDateFlexible(document.getElementById('debIndep').value);
-      const fin = parseDateFlexible(document.getElementById('finIndep').value);
-      out.textContent = '';
-      if (!deb && !fin) return;
-      if (!deb || !fin) { out.textContent = 'Dates invalides.'; return; }
-      if (fin < deb) { out.textContent = 'Date fin antérieure à date début.'; return; }
-      const r = diffYMDCalendar(deb, fin);
-      out.textContent = `${r.years} an(s), ${r.months} mois, ${r.days} jour(s) (du ${formatDateFR(deb)} au ${formatDateFR(fin)}).`;
-    }
+    function updatePermitCrm(){
+      const resEl = document.getElementById('permitCrmResult');
+      const detEl = document.getElementById('permitCrmDetail');
+      const d = parseDateFlexible(document.getElementById('permitDate').value);
 
-    function calculHamon() {
-      const out = document.getElementById('resultHamon');
-      const d = parseDateFlexible(document.getElementById('dateEnvoiHamon').value);
-      out.textContent = '';
-      if (!d) {
-        if (String(document.getElementById('dateEnvoiHamon').value || '').trim() === '') return;
-        out.textContent = 'Date invalide.';
+      resEl.textContent = '';
+      detEl.textContent = '';
+
+      const raw = String(document.getElementById('permitDate').value || '').trim();
+      if (raw === '') return;
+
+      if (!d){
+        resEl.textContent = 'Date invalide.';
         return;
       }
-      const eff = addDaysUtcNoon(d, 33);
-      out.textContent = `Date d'effet Mieux Assuré : ${formatDateFR(eff)} (J+33).`;
+
+      const today = new Date();
+      const today0 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+      if (d > today0){
+        resEl.textContent = 'Date de permis dans le futur.';
+        return;
+      }
+
+      const info = computePermitYearsRounded(d, today0);
+      const crm = getCrmForYears(info.roundedYears);
+
+      resEl.textContent = `CRM max : ${format2FR(crm)}`;
+      detEl.textContent =
+        `Permis : ${formatDateFR(d)} ; ancienneté ≈ ${info.wholeYears} an(s) + ${info.monthsInCurrentYear} mois` +
+        ` → retenu : ${info.roundedYears} an(s) (règle des 9 mois).`;
+    }
+
+    /* ===== Reste de ton outil (frise / calculs) ===== */
+    const GLUE_DAYS = 1;
+    function toUtcNoonMs(date) { return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0, 0); }
+    function addDaysUtcNoon(date, days) {
+      const t = toUtcNoonMs(date) + days * 24 * 60 * 60 * 1000;
+      const d = new Date(t);
+      return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+    }
+    function addMonths(date, n) { const d = new Date(date.getTime()); d.setMonth(d.getMonth() + n); return d; }
+
+    function extraMonthsFromRemainderDays(remDays) {
+      if (!Number.isFinite(remDays) || remDays < 15) return 0;
+      return Math.ceil((remDays - 14) / 30);
     }
 
     function intersectInterval(deb, fin, minDate, maxDate) {
@@ -709,6 +798,17 @@
       return false;
     }
 
+    function totalMonthsAcrossMerged(mergedIntervals) {
+      let fullMonths = 0, remDaysTotal = 0;
+      mergedIntervals.forEach(inter => {
+        const r = monthsAndRemainderDays(inter.start, inter.end);
+        fullMonths += r.months;
+        remDaysTotal += r.remDays;
+      });
+      const extra = extraMonthsFromRemainderDays(remDaysTotal);
+      return { fullMonths, remDaysTotal, extra, total: fullMonths + extra };
+    }
+
     function computeGapsWithinWindow(windowStart, windowEnd, mergedIntervals) {
       const gaps = [];
       let cursor = new Date(windowStart);
@@ -734,10 +834,6 @@
       document.getElementById(legendId).textContent = message || '';
     }
 
-    function rectsOverlap(r1, r2) {
-      return !(r2.x > r1.x + r1.w || r2.x + r2.w < r1.x || r2.y > r1.y + r1.h || r2.y + r2.h < r1.y);
-    }
-
     function placeTextAvoiding(ctx, text, x, levelDefs, placedRects, cssW, options) {
       const font = options.font || '11px Arial';
       const color = options.color || '#000';
@@ -760,7 +856,8 @@
 
         let ok = true;
         for (const r of placedRects) {
-          if (rectsOverlap(rect, r)) { ok = false; break; }
+          const overlap = !(rect.x > r.x + r.w || rect.x + rect.w < r.x || rect.y > r.y + r.h || rect.y + rect.h < r.y);
+          if (overlap) { ok = false; break; }
         }
         if (!ok) continue;
 
@@ -773,6 +870,10 @@
         return { placed: true, rect };
       }
       return { placed: false };
+    }
+
+    function getCssVar(name){
+      return getComputedStyle(document.body).getPropertyValue(name).trim();
     }
 
     function drawTimeline(canvasId, legendId, windowStart, windowEnd, mergedIntervals, label, crmMarkers) {
@@ -820,7 +921,7 @@
       ctx.textAlign = 'right';
       ctx.fillText(formatDateFR(windowEnd), padL + lineW, 20);
 
-      ctx.strokeStyle = '#d32f2f';
+      ctx.strokeStyle = getCssVar('--timelineRed');
       ctx.lineWidth = 14;
       ctx.lineCap = 'butt';
       ctx.beginPath();
@@ -828,7 +929,7 @@
       ctx.lineTo(padL + lineW, yLine);
       ctx.stroke();
 
-      ctx.strokeStyle = '#2e7d32';
+      ctx.strokeStyle = getCssVar('--timelineGreen');
       ctx.lineWidth = 14;
       ctx.lineCap = 'butt';
       mergedIntervals.forEach(inter => {
@@ -841,21 +942,34 @@
         ctx.stroke();
       });
 
-      ctx.font = '12px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+      // Bonus (mois au centre) : contour uniquement en dark
       mergedIntervals.forEach(inter => {
         const xs = xOf(inter.start);
         const xe = xOf(inter.end);
         if ((xe - xs) < 22) return;
+
         const r = monthsAndRemainderDays(inter.start, inter.end);
         const months = r.months + extraMonthsFromRemainderDays(r.remDays);
         if (months <= 0) return;
+
         const mid = (xs + xe) / 2;
-        ctx.fillStyle = 'rgba(0,0,0,0.35)';
-        ctx.fillText(String(months), mid + 1, yLine + 1);
-        ctx.fillStyle = '#fff';
-        ctx.fillText(String(months), mid, yLine);
+        const txt = String(months);
+
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        const stroke = getCssVar('--bonusTextStrokeDark');
+        const fill = isDark ? getCssVar('--bonusTextDark') : getCssVar('--bonusText');
+
+        if (isDark) {
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = stroke;
+          ctx.strokeText(txt, mid, yLine);
+        }
+
+        ctx.fillStyle = fill;
+        ctx.fillText(txt, mid, yLine);
       });
 
       const placed = [];
@@ -894,12 +1008,12 @@
         const preferredOrder = (idx % 2 === 0) ? [0,1,2,3] : [1,0,3,2];
 
         const res = placeTextAvoiding(ctx, lab.text, lab.x, dateLevels, placed, cssW, {
-          font: '11px Arial', color: '#2e7d32', preferredOrder, pad: 3, h: 12
+          font: '11px Arial', color: getCssVar('--timelineGreen'), preferredOrder, pad: 3, h: 12
         });
 
         if (!res.placed) return;
 
-        ctx.strokeStyle = '#2e7d32';
+        ctx.strokeStyle = getCssVar('--timelineGreen');
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(lab.x, yLine - 18);
@@ -918,7 +1032,7 @@
         crmMarkers.forEach((m, idx) => {
           const x = xOf(m.at);
 
-          ctx.strokeStyle = '#0b3d91';
+          ctx.strokeStyle = getCssVar('--markerBlue');
           ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.moveTo(x, yLine - 20);
@@ -928,7 +1042,7 @@
           const preferredOrder = (idx % 2 === 0) ? [0,1,2,3] : [1,0,3,2];
 
           placeTextAvoiding(ctx, String(m.crm), x, crmLevels, placed, cssW, {
-            font: '12px Arial', color: '#0b3d91', preferredOrder, pad: 3, h: 12
+            font: '12px Arial', color: getCssVar('--markerBlue'), preferredOrder, pad: 3, h: 12
           });
         });
       }
@@ -970,7 +1084,6 @@
       document.getElementById('interruptionsAuto').textContent = '';
       document.getElementById('interruptionsMoto').textContent = '';
 
-      // reset outil CRM
       document.getElementById('crmToolInput').value = '';
       document.getElementById('crmToolResult').textContent = '';
       document.getElementById('crmToolTrail').textContent = '';
@@ -978,7 +1091,37 @@
       crmCurrentValue = null;
       crmClicks = [];
 
+      document.getElementById('permitDate').value = '';
+      document.getElementById('permitCrmResult').textContent = '';
+      document.getElementById('permitCrmDetail').textContent = '';
+
+      hideTooltip();
       calculer(); calculIndep(); calculHamon();
+    }
+
+    function calculIndep() {
+      const out = document.getElementById('resultIndep');
+      const deb = parseDateFlexible(document.getElementById('debIndep').value);
+      const fin = parseDateFlexible(document.getElementById('finIndep').value);
+      out.textContent = '';
+      if (!deb && !fin) return;
+      if (!deb || !fin) { out.textContent = 'Dates invalides.'; return; }
+      if (fin < deb) { out.textContent = 'Date fin antérieure à date début.'; return; }
+      const years = fin.getFullYear() - deb.getFullYear();
+      out.textContent = `${years} an(s) (approx.)\n${formatDateFR(deb)} → ${formatDateFR(fin)}`;
+    }
+
+    function calculHamon() {
+      const out = document.getElementById('resultHamon');
+      const d = parseDateFlexible(document.getElementById('dateEnvoiHamon').value);
+      out.textContent = '';
+      if (!d) {
+        if (String(document.getElementById('dateEnvoiHamon').value || '').trim() === '') return;
+        out.textContent = 'Date invalide.';
+        return;
+      }
+      const eff = addDaysUtcNoon(d, 33);
+      out.textContent = `Effet : ${formatDateFR(eff)}`;
     }
 
     function calculer() {
@@ -1101,25 +1244,66 @@
       renderInterruptions('interruptionsMoto', []);
     }
 
+    /* ===== Tooltip CRM résiliation ===== */
+    function showTooltipAt(x, y, html){
+      const tip = document.getElementById('crmTooltip');
+      tip.innerHTML = html;
+      tip.style.display = 'block';
+
+      const pad = 10;
+      const rect = tip.getBoundingClientRect();
+      let left = x + 12;
+      let top = y + 12;
+
+      const maxLeft = window.innerWidth - rect.width - pad;
+      const maxTop = window.innerHeight - rect.height - pad;
+
+      left = Math.max(pad, Math.min(maxLeft, left));
+      top = Math.max(pad, Math.min(maxTop, top));
+
+      tip.style.left = left + 'px';
+      tip.style.top = top + 'px';
+    }
+    function hideTooltip(){
+      const tip = document.getElementById('crmTooltip');
+      tip.style.display = 'none';
+      tip.innerHTML = '';
+    }
+
     /* ===== Listeners ===== */
-    document.getElementById('btnClear').addEventListener('click', effacerTout);
     document.getElementById('btnTheme').addEventListener('click', toggleTheme);
     document.getElementById('btnCrmTable').addEventListener('click', toggleCrmTable);
     document.getElementById('btnCrmTool').addEventListener('click', toggleCrmTool);
+    document.getElementById('btnCrmPermit').addEventListener('click', toggleCrmPermit);
+    document.getElementById('btnClear').addEventListener('click', effacerTout);
+    document.getElementById('btnMeta').addEventListener('click', toggleMeta);
 
-    // Reset outil CRM dès qu'on touche le champ (focus) [web:65]
-    document.getElementById('crmToolInput').addEventListener('focus', () => {
-      resetCrmToolState();
-    });
-    // (optionnel) si on tape, on met juste à jour l'affichage de base
-    document.getElementById('crmToolInput').addEventListener('input', () => {
-      resetCrmToolState();
-      updateCrmToolUI();
-    });
+    document.getElementById('crmToolInput').addEventListener('focus', () => resetCrmToolState());
+    document.getElementById('crmToolInput').addEventListener('input', () => { resetCrmToolState(); updateCrmToolUI(); });
 
     document.getElementById('btnCrmNone').addEventListener('click', () => applyCrmAction(CRM_ACTIONS[0]));
     document.getElementById('btnCrm50').addEventListener('click', () => applyCrmAction(CRM_ACTIONS[1]));
     document.getElementById('btnCrm100').addEventListener('click', () => applyCrmAction(CRM_ACTIONS[2]));
+
+    document.getElementById('permitDate').addEventListener('input', updatePermitCrm);
+
+    document.getElementById('crmInfoBtn').addEventListener('click', (e) => {
+      const msg =
+        `<strong>CRM résiliation</strong><br>` +
+        `<em>Champ indicatif : sert uniquement à afficher un repère (CRM) sur la frise.</em>`;
+      showTooltipAt(e.clientX, e.clientY, msg);
+    });
+
+    document.addEventListener('click', (e) => {
+      const tip = document.getElementById('crmTooltip');
+      if (tip.style.display === 'block') {
+        const btn = document.getElementById('crmInfoBtn');
+        if (tip.contains(e.target) || btn.contains(e.target)) return;
+        hideTooltip();
+      }
+    });
+    window.addEventListener('scroll', hideTooltip, { passive: true });
+    window.addEventListener('resize', hideTooltip);
 
     document.querySelectorAll('input[type="text"], input[type="checkbox"], select').forEach(el => {
       el.addEventListener('input', calculer);
@@ -1131,11 +1315,12 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       initTheme();
-      setCredit();
+      renderMetaVersion();
       checkForUpdate();
       initCanvases();
       calculer(); calculIndep(); calculHamon();
       updateCrmToolUI();
+      updatePermitCrm();
     });
   </script>
 </body>
