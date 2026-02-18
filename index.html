@@ -1681,9 +1681,7 @@ function roundRectPath(ctx, x, y, w, h, r){
 
 function effacerTout() {
       document.getElementById('dateEffet').value = '';
-      document.getElementById('moto').checked = false;
-
-      for (let i = 1; i <= 20; i++) {
+for (let i = 1; i <= 20; i++) {
         document.getElementById('type' + i).value = 'AUTO';
         document.getElementById('deb' + i).value = '';
         document.getElementById('fin' + i).value = '';
@@ -1724,7 +1722,12 @@ function effacerTout() {
       document.getElementById('permitCrmDetail').textContent = '';
 
       hideTooltip();
-      calculer(); calculIndep(); calculHamon();
+        // Reset Moto (désélection + arrêt du glow)
+  const motoCb = document.getElementById('moto');
+  if (motoCb) motoCb.checked = false;
+  if (typeof syncMotoBtn === 'function') syncMotoBtn();
+
+calculer(); calculIndep(); calculHamon();
     }
 
     function calculIndep() {
