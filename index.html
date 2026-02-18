@@ -658,6 +658,58 @@ body:not(.dark) .typeSwitchToggle .typePill{ background: color-mix(in oklab, var
 body.dark #updateBanner button{ background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.16); color: rgba(255,255,255,0.92); }
 #updateBanner button:hover{ filter: brightness(1.04); }
 
+
+
+/* === Correction couleur : sélection pleine comme les outils (Indep/Hamon) === */
+.sectionToggleBtn.toolBtnActive{
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 22px rgba(17,169,166,0.20) !important;
+  filter: brightness(1.03) !important;
+}
+
+body.dark .sectionToggleBtn.toolBtnActive{
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: rgba(255,255,255,0.92) !important;
+  box-shadow: 0 10px 22px rgba(17,169,166,0.20) !important;
+  filter: brightness(1.03) !important;
+}
+
+.sectionToggleBtn.toolBtnActive:active,
+.sectionToggleBtn.toolBtnActive:focus,
+.sectionToggleBtn.toolBtnActive:focus-visible{
+  box-shadow: 0 10px 22px rgba(17,169,166,0.20) !important;
+  filter: brightness(1.03) !important;
+  transform: none !important;
+}
+
+
+/* === Correction sélection Moto : même style que les outils === */
+.motoToolBtn.toolBtnActive{
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 22px rgba(17,169,166,0.20) !important;
+  filter: brightness(1.03) !important;
+}
+
+body.dark .motoToolBtn.toolBtnActive{
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: rgba(255,255,255,0.92) !important;
+  box-shadow: 0 10px 22px rgba(17,169,166,0.20) !important;
+  filter: brightness(1.03) !important;
+}
+
+.motoToolBtn.toolBtnActive:active,
+.motoToolBtn.toolBtnActive:focus,
+.motoToolBtn.toolBtnActive:focus-visible{
+  box-shadow: 0 10px 22px rgba(17,169,166,0.20) !important;
+  filter: brightness(1.03) !important;
+  transform: none !important;
+}
 </style>
 </head>
 <body>
@@ -667,7 +719,7 @@ body.dark #updateBanner button{ background: rgba(255,255,255,0.06); border-color
 <h1>Outil de validation</h1>
 <div class="row headerBtns" style="gap:8px;">
 <button class="pillBtn" id="btnCrmTable" title="Afficher/Masquer le tableau CRM" type="button">Tableau CRM</button>
-<button class="pillBtn" id="btnCrmTool" title="Afficher/Masquer l’outil de calcul CRM" type="button">Outil CRM</button>
+<button class="pillBtn" id="btnCrmTool" title="Afficher/Masquer l’outil de calcul CRM" type="button">Impact CRM</button>
 <button class="pillBtn" id="btnCrmPermit" title="Afficher/Masquer l’outil CRM max via date de permis" type="button">CRM max (permis)</button>
 </div>
 </div>
@@ -761,65 +813,125 @@ body.dark #updateBanner button{ background: rgba(255,255,255,0.06); border-color
 <span aria-hidden="true" class="typePill"></span>
 </div></td><td><input id="deb1" maxlength="10" type="text"/></td><td><input id="fin1" maxlength="10" type="text"/></td><td id="mois1"></td><td><input class="crmInput" id="crm1" maxlength="8" type="text"/></td></tr>
 <tr><td>2</td><td><select class="typeSelectHidden" id="type2"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
-<div aria-checked="false" aria-label="Type 2 (Auto/Moto)" class="typeSwitchToggle" data-target="type2" role="switch" tabindex="0">
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type2" role="switch" tabindex="0">
 <span class="typeText typeTextAuto">Auto</span>
 <span class="typeText typeTextMoto">Moto</span>
 <span aria-hidden="true" class="typePill"></span>
 </div></td><td><input id="deb2" maxlength="10" type="text"/></td><td><input id="fin2" maxlength="10" type="text"/></td><td id="mois2"></td><td><input class="crmInput" id="crm2" maxlength="8" type="text"/></td></tr>
 <tr><td>3</td><td><select class="typeSelectHidden" id="type3"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
-<div aria-checked="false" aria-label="Type 3 (Auto/Moto)" class="typeSwitchToggle" data-target="type3" role="switch" tabindex="0">
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type3" role="switch" tabindex="0">
 <span class="typeText typeTextAuto">Auto</span>
 <span class="typeText typeTextMoto">Moto</span>
 <span aria-hidden="true" class="typePill"></span>
 </div></td><td><input id="deb3" maxlength="10" type="text"/></td><td><input id="fin3" maxlength="10" type="text"/></td><td id="mois3"></td><td><input class="crmInput" id="crm3" maxlength="8" type="text"/></td></tr>
 <tr><td>4</td><td><select class="typeSelectHidden" id="type4"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
-<div aria-checked="false" aria-label="Type 4 (Auto/Moto)" class="typeSwitchToggle" data-target="type4" role="switch" tabindex="0">
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type4" role="switch" tabindex="0">
 <span class="typeText typeTextAuto">Auto</span>
 <span class="typeText typeTextMoto">Moto</span>
 <span aria-hidden="true" class="typePill"></span>
 </div></td><td><input id="deb4" maxlength="10" type="text"/></td><td><input id="fin4" maxlength="10" type="text"/></td><td id="mois4"></td><td><input class="crmInput" id="crm4" maxlength="8" type="text"/></td></tr>
 <tr><td>5</td><td><select class="typeSelectHidden" id="type5"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
-<div aria-checked="false" aria-label="Type 5 (Auto/Moto)" class="typeSwitchToggle" data-target="type5" role="switch" tabindex="0">
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type5" role="switch" tabindex="0">
 <span class="typeText typeTextAuto">Auto</span>
 <span class="typeText typeTextMoto">Moto</span>
 <span aria-hidden="true" class="typePill"></span>
 </div></td><td><input id="deb5" maxlength="10" type="text"/></td><td><input id="fin5" maxlength="10" type="text"/></td><td id="mois5"></td><td><input class="crmInput" id="crm5" maxlength="8" type="text"/></td></tr>
 <tr><td>6</td><td><select class="typeSelectHidden" id="type6"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
-<div aria-checked="false" aria-label="Type 6 (Auto/Moto)" class="typeSwitchToggle" data-target="type6" role="switch" tabindex="0">
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type6" role="switch" tabindex="0">
 <span class="typeText typeTextAuto">Auto</span>
 <span class="typeText typeTextMoto">Moto</span>
 <span aria-hidden="true" class="typePill"></span>
 </div></td><td><input id="deb6" maxlength="10" type="text"/></td><td><input id="fin6" maxlength="10" type="text"/></td><td id="mois6"></td><td><input class="crmInput" id="crm6" maxlength="8" type="text"/></td></tr>
 <tr><td>7</td><td><select class="typeSelectHidden" id="type7"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
-<div aria-checked="false" aria-label="Type 7 (Auto/Moto)" class="typeSwitchToggle" data-target="type7" role="switch" tabindex="0">
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type7" role="switch" tabindex="0">
 <span class="typeText typeTextAuto">Auto</span>
 <span class="typeText typeTextMoto">Moto</span>
 <span aria-hidden="true" class="typePill"></span>
 </div></td><td><input id="deb7" maxlength="10" type="text"/></td><td><input id="fin7" maxlength="10" type="text"/></td><td id="mois7"></td><td><input class="crmInput" id="crm7" maxlength="8" type="text"/></td></tr>
 <tr><td>8</td><td><select class="typeSelectHidden" id="type8"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
-<div aria-checked="false" aria-label="Type 8 (Auto/Moto)" class="typeSwitchToggle" data-target="type8" role="switch" tabindex="0">
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type8" role="switch" tabindex="0">
 <span class="typeText typeTextAuto">Auto</span>
 <span class="typeText typeTextMoto">Moto</span>
 <span aria-hidden="true" class="typePill"></span>
 </div></td><td><input id="deb8" maxlength="10" type="text"/></td><td><input id="fin8" maxlength="10" type="text"/></td><td id="mois8"></td><td><input class="crmInput" id="crm8" maxlength="8" type="text"/></td></tr>
 <tr><td>9</td><td><select class="typeSelectHidden" id="type9"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
-<div aria-checked="false" aria-label="Type 9 (Auto/Moto)" class="typeSwitchToggle" data-target="type9" role="switch" tabindex="0">
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type9" role="switch" tabindex="0">
 <span class="typeText typeTextAuto">Auto</span>
 <span class="typeText typeTextMoto">Moto</span>
 <span aria-hidden="true" class="typePill"></span>
 </div></td><td><input id="deb9" maxlength="10" type="text"/></td><td><input id="fin9" maxlength="10" type="text"/></td><td id="mois9"></td><td><input class="crmInput" id="crm9" maxlength="8" type="text"/></td></tr>
 <tr><td>10</td><td><select class="typeSelectHidden" id="type10"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
-<div aria-checked="false" aria-label="Type 10 (Auto/Moto)" class="typeSwitchToggle" data-target="type10" role="switch" tabindex="0">
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type10" role="switch" tabindex="0">
 <span class="typeText typeTextAuto">Auto</span>
 <span class="typeText typeTextMoto">Moto</span>
 <span aria-hidden="true" class="typePill"></span>
 </div></td><td><input id="deb10" maxlength="10" type="text"/></td><td><input id="fin10" maxlength="10" type="text"/></td><td id="mois10"></td><td><input class="crmInput" id="crm10" maxlength="8" type="text"/></td></tr>
+<tr><td>11</td><td><select class="typeSelectHidden" id="type11"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type11" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb11" maxlength="10" type="text"/></td><td><input id="fin11" maxlength="10" type="text"/></td><td id="mois11"></td><td><input class="crmInput" id="crm11" maxlength="8" type="text"/></td></tr>
+<tr><td>12</td><td><select class="typeSelectHidden" id="type12"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type12" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb12" maxlength="10" type="text"/></td><td><input id="fin12" maxlength="10" type="text"/></td><td id="mois12"></td><td><input class="crmInput" id="crm12" maxlength="8" type="text"/></td></tr>
+<tr><td>13</td><td><select class="typeSelectHidden" id="type13"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type13" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb13" maxlength="10" type="text"/></td><td><input id="fin13" maxlength="10" type="text"/></td><td id="mois13"></td><td><input class="crmInput" id="crm13" maxlength="8" type="text"/></td></tr>
+<tr><td>14</td><td><select class="typeSelectHidden" id="type14"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type14" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb14" maxlength="10" type="text"/></td><td><input id="fin14" maxlength="10" type="text"/></td><td id="mois14"></td><td><input class="crmInput" id="crm14" maxlength="8" type="text"/></td></tr>
+<tr><td>15</td><td><select class="typeSelectHidden" id="type15"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type15" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb15" maxlength="10" type="text"/></td><td><input id="fin15" maxlength="10" type="text"/></td><td id="mois15"></td><td><input class="crmInput" id="crm15" maxlength="8" type="text"/></td></tr>
+<tr><td>16</td><td><select class="typeSelectHidden" id="type16"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type16" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb16" maxlength="10" type="text"/></td><td><input id="fin16" maxlength="10" type="text"/></td><td id="mois16"></td><td><input class="crmInput" id="crm16" maxlength="8" type="text"/></td></tr>
+<tr><td>17</td><td><select class="typeSelectHidden" id="type17"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type17" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb17" maxlength="10" type="text"/></td><td><input id="fin17" maxlength="10" type="text"/></td><td id="mois17"></td><td><input class="crmInput" id="crm17" maxlength="8" type="text"/></td></tr>
+<tr><td>18</td><td><select class="typeSelectHidden" id="type18"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type18" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb18" maxlength="10" type="text"/></td><td><input id="fin18" maxlength="10" type="text"/></td><td id="mois18"></td><td><input class="crmInput" id="crm18" maxlength="8" type="text"/></td></tr>
+<tr><td>19</td><td><select class="typeSelectHidden" id="type19"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type19" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb19" maxlength="10" type="text"/></td><td><input id="fin19" maxlength="10" type="text"/></td><td id="mois19"></td><td><input class="crmInput" id="crm19" maxlength="8" type="text"/></td></tr>
+<tr><td>20</td><td><select class="typeSelectHidden" id="type20"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type20" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb20" maxlength="10" type="text"/></td><td><input id="fin20" maxlength="10" type="text"/></td><td id="mois20"></td><td><input class="crmInput" id="crm20" maxlength="8" type="text"/></td></tr>
 </tbody>
 </table>
 </div><div class="result" id="totalMois"></div><div class="result" id="interruptionTxt"></div><div class="card cardSmall notesBox">
 <h2>Notes</h2>
 <textarea id="notes" placeholder="Notes / observations..."></textarea>
-</div><div class="error" id="errors"></div><div class="sectionToggleRow"><button class="pillBtn sectionToggleBtn" id="btnToggleIndep" type="button">Calcul indépendant</button><button class="pillBtn sectionToggleBtn" id="btnToggleHamon" type="button">Hamon</button></div><div class="card cardSmall" id="indepCard" style="display:none;">
+</div><div class="error" id="errors"></div><div class="sectionToggleRow"><button class="pillBtn sectionToggleBtn" id="btnToggleIndep" type="button">Période précise</button><button class="pillBtn sectionToggleBtn" id="btnToggleHamon" type="button">Hamon</button></div><div class="card cardSmall" id="indepCard" style="display:none;">
 <h2>Calcul indépendant d'une période</h2>
 <div class="row" style="margin-top:6px;">
 <label for="debIndep">Début :</label>
@@ -980,7 +1092,7 @@ body.dark #updateBanner button{ background: rgba(255,255,255,0.06); border-color
         setWrapOpen('crmTableWrap','btnCrmTable',false,'Tableau CRM','Masquer tableau CRM');
       }
       if (except !== 'tool') {
-        setWrapOpen('crmToolWrap','btnCrmTool',false,'Outil CRM','Masquer outil CRM');
+        setWrapOpen('crmToolWrap','btnCrmTool',false,'Impact CRM','Masquer Impact CRM');
       }
       if (except !== 'permit') {
         setWrapOpen('crmPermitWrap','btnCrmPermit',false,'CRM max (permis)','Masquer CRM max (permis)');
@@ -994,7 +1106,7 @@ body.dark #updateBanner button{ background: rgba(255,255,255,0.06); border-color
       setWrapOpen('crmTableWrap','btnCrmTable',!isOpen,'Tableau CRM','Masquer tableau CRM', renderCrmTable);
     }
 
-    /* ===== Outil CRM (sinistres) ===== */
+    /* ===== Impact CRM (sinistres) ===== */
     const CRM_MAX = 3.50;
 
     const CRM_ACTIONS = [
@@ -1011,7 +1123,7 @@ body.dark #updateBanner button{ background: rgba(255,255,255,0.06); border-color
       const wrap = document.getElementById('crmToolWrap');
       const isOpen = wrap.style.display === 'block';
       if (!isOpen) closeAllCrmPanels('tool');
-      setWrapOpen('crmToolWrap','btnCrmTool',!isOpen,'Outil CRM','Masquer outil CRM', updateCrmToolUI);
+      setWrapOpen('crmToolWrap','btnCrmTool',!isOpen,'Impact CRM','Masquer Impact CRM', updateCrmToolUI);
     }
 
     function parseCrmInput(v){
@@ -1571,7 +1683,7 @@ function effacerTout() {
       document.getElementById('dateEffet').value = '';
       document.getElementById('moto').checked = false;
 
-      for (let i = 1; i <= 10; i++) {
+      for (let i = 1; i <= 20; i++) {
         document.getElementById('type' + i).value = 'AUTO';
         document.getElementById('deb' + i).value = '';
         document.getElementById('fin' + i).value = '';
@@ -1671,7 +1783,7 @@ ${formatDateFR(deb)} → ${formatDateFR(fin)}`;
       totalEl.textContent = '';
       interrupEl.textContent = '';
 
-      for (let i = 1; i <= 10; i++) document.getElementById('mois' + i).textContent = '';
+      for (let i = 1; i <= 20; i++) document.getElementById('mois' + i).textContent = '';
 
       const dEffet = parseDateFlexible(document.getElementById('dateEffet').value);
       const motoChecked = document.getElementById('moto').checked;
@@ -1691,7 +1803,7 @@ ${formatDateFR(deb)} → ${formatDateFR(fin)}`;
       const intervalsMoto = [];
       let hasError = false;
 
-      for (let i = 1; i <= 10; i++) {
+      for (let i = 1; i <= 20; i++) {
         const type = document.getElementById('type' + i).value;
         const debStr = document.getElementById('deb' + i).value.trim();
         const finStr = document.getElementById('fin' + i).value.trim();
@@ -1737,9 +1849,9 @@ ${formatDateFR(deb)} → ${formatDateFR(fin)}`;
         renderInterruptions('interruptionsAuto', []);
         renderInterruptions('interruptionsMoto', []);
         totalEl.textContent = motoChecked
-          ? `Antécédents (sans fenêtre) : Auto = ${autoAgg.total} mois ; Moto = ${motoAgg.total} mois.`
-          : `Antécédents (sans fenêtre) : Auto = ${autoAgg.total} mois.`;
-        interrupEl.textContent = `Interruption : nécessite une date d’effet (fenêtre ${refMonths} mois).`;
+          ? `Antécédents (sans restriction) : Auto = ${autoAgg.total} mois ; Moto = ${motoAgg.total} mois.`
+          : `Antécédents (sans restriction) : Auto = ${autoAgg.total} mois.`;
+        interrupEl.textContent = `Interruption : nécessite une date d’effet (${refMonths} mois).`;
         return;
       }
 
