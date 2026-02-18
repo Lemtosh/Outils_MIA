@@ -578,7 +578,7 @@ body.dark .typeSwitchToggle:not(.isMoto) .typeTextAuto{ color: rgba(255,255,255,
 @media (min-width: 1200px) and (min-height: 760px){
   html, body{ height: 100%; }
   body{ overflow: hidden; }
-  .app{ height: 100vh; overflow: hidden; padding: 18px 16px 18px; gap: 14px; }
+  .app{ height: 100vh; overflow-y: auto; overflow-x: hidden; padding: 18px 16px 18px; gap: 14px; }
   .left, .right{ gap: 12px; }
   h1{ font-size: clamp(26px, 3.3vw, 44px); }
   .card{ padding: 12px 14px; }
@@ -2019,7 +2019,7 @@ function wireUpdateNow(remoteVersion){
 // --- Optional: check for update periodically so banner can appear even if page stays open ---
 function startPeriodicUpdateCheck(){
   if(typeof checkForUpdate !== 'function') return;
-  setInterval(checkForUpdate, 30 * 60 * 1000); // every 30 min
+  setInterval(checkForUpdate, 10 * 60 * 1000); // every 10 min
 }
 
 // --- Optional: daily refresh at 08:00 (local time) to reduce outdated clients ---
