@@ -283,6 +283,28 @@
       line-height: 1.25;
       z-index: 10000;
     }
+  
+
+    /* ===== Boutons outils : couleur uniquement (pas de grossissement) ===== */
+    #btnCrmTable.toolBtnActive,
+    #btnCrmTool.toolBtnActive,
+    #btnCrmPermit.toolBtnActive{
+      background: #e41c7a !important;
+      border-color: #e41c7a !important;
+      color: #ffffff !important;
+      box-shadow: none !important;
+      transform: none !important;
+      filter: none !important;
+    }
+
+    /* Neutralise tout effet de pression/focus (transform/ombre) sur ces 3 boutons */
+    #btnCrmTable:active, #btnCrmTool:active, #btnCrmPermit:active,
+    #btnCrmTable:focus,  #btnCrmTool:focus,  #btnCrmPermit:focus,
+    #btnCrmTable:focus-visible, #btnCrmTool:focus-visible, #btnCrmPermit:focus-visible{
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
   </style>
 </head>
 
@@ -465,7 +487,7 @@
   <div id="crmTooltip" class="tooltip" role="dialog" aria-live="polite"></div>
 
   <script>
-    const LOCAL_VERSION = "0.22";
+    const LOCAL_VERSION = "0.23";
     const VERSION_URL = "https://gist.githubusercontent.com/Lemtosh/ac7fc859fe26f28a17f86fa73c4a4e95/raw/version.json";
 
     function cmpVersion(a, b) {
@@ -564,15 +586,41 @@
         tbody.appendChild(tr);
       });
     }
+
+    /* ===== Panels CRM: 1 seul ouvert ===== */
+    function setWrapOpen(wrapId, btnId, isOpen, closedLabel, openedLabel, onOpen){
+      const wrap = document.getElementById(wrapId);
+      const btn = document.getElementById(btnId);
+      if (!wrap || !btn) return;
+      wrap.style.display = isOpen ? 'block' : 'none';
+      btn.textContent = isOpen ? openedLabel : closedLabel;
+
+      // état visuel : bouton sélectionné
+      btn.classList.toggle('toolBtnActive', !!isOpen);
+      if (isOpen && typeof onOpen === 'function') onOpen();
+    }
+    function closeAllCrmPanels(except){ // except: 'table' | 'tool' | 'permit' | null
+      if (except !== 'table') {
+        setWrapOpen('crmTableWrap','btnCrmTable',false,'Tableau CRM','Masquer tableau CRM');
+      }
+      if (except !== 'tool') {
+        setWrapOpen('crmToolWrap','btnCrmTool',false,'Outil CRM','Masquer outil CRM');
+      }
+      if (except !== 'permit') {
+        setWrapOpen('crmPermitWrap','btnCrmPermit',false,'CRM max (permis)','Masquer CRM max (permis)');
+      }
+    }
+
     function toggleCrmTable(){
       const wrap = document.getElementById('crmTableWrap');
       const isOpen = wrap.style.display === 'block';
-      wrap.style.display = isOpen ? 'none' : 'block';
-      document.getElementById('btnCrmTable').textContent = isOpen ? 'Tableau CRM' : 'Masquer tableau CRM';
-      if (!isOpen) renderCrmTable();
+      if (!isOpen) closeAllCrmPanels('table');
+      setWrapOpen('crmTableWrap','btnCrmTable',!isOpen,'Tableau CRM','Masquer tableau CRM', renderCrmTable);
     }
 
     /* ===== Outil CRM (sinistres) ===== */
+    const CRM_MAX = 3.50;
+
     const CRM_ACTIONS = [
       { key: 'none', label: 'Aucun sinistre responsable', factor: 0.95, short: '×0,95' },
       { key: '50',   label: 'Sinistre 50%',              factor: 1.125, short: '×1,125' },
@@ -586,9 +634,8 @@
     function toggleCrmTool(){
       const wrap = document.getElementById('crmToolWrap');
       const isOpen = wrap.style.display === 'block';
-      wrap.style.display = isOpen ? 'none' : 'block';
-      document.getElementById('btnCrmTool').textContent = isOpen ? 'Outil CRM' : 'Masquer outil CRM';
-      if (!isOpen) updateCrmToolUI();
+      if (!isOpen) closeAllCrmPanels('tool');
+      setWrapOpen('crmToolWrap','btnCrmTool',!isOpen,'Outil CRM','Masquer outil CRM', updateCrmToolUI);
     }
 
     function parseCrmInput(v){
@@ -635,7 +682,8 @@
       }
 
       const baseTxt = `CRM départ : ${format2FR(trunc2(crmBaseValue))}`;
-      const curTxt  = `Résultat : ${format2FR(trunc2(crmCurrentValue))}`;
+      const displayed = Math.min(trunc2(crmCurrentValue), CRM_MAX);
+      const curTxt  = `Résultat : ${format2FR(displayed)}`;
       resultEl.textContent = curTxt;
 
       const summary = getClicksSummary();
@@ -652,6 +700,7 @@
         crmClicks = [];
       }
       crmCurrentValue = trunc2(crmCurrentValue * action.factor);
+      crmCurrentValue = Math.min(crmCurrentValue, CRM_MAX);
       crmClicks.push(action);
       updateCrmToolUI();
     }
@@ -660,9 +709,8 @@
     function toggleCrmPermit(){
       const wrap = document.getElementById('crmPermitWrap');
       const isOpen = wrap.style.display === 'block';
-      wrap.style.display = isOpen ? 'none' : 'block';
-      document.getElementById('btnCrmPermit').textContent = isOpen ? 'CRM max (permis)' : 'Masquer CRM max (permis)';
-      if (!isOpen) updatePermitCrm();
+      if (!isOpen) closeAllCrmPanels('permit');
+      setWrapOpen('crmPermitWrap','btnCrmPermit',!isOpen,'CRM max (permis)','Masquer CRM max (permis)', updatePermitCrm);
     }
 
     function parseDateFlexible(str) {
@@ -1103,12 +1151,34 @@
       const out = document.getElementById('resultIndep');
       const deb = parseDateFlexible(document.getElementById('debIndep').value);
       const fin = parseDateFlexible(document.getElementById('finIndep').value);
+
       out.textContent = '';
-      if (!deb && !fin) return;
-      if (!deb || !fin) { out.textContent = 'Dates invalides.'; return; }
-      if (fin < deb) { out.textContent = 'Date fin antérieure à date début.'; return; }
-      const years = fin.getFullYear() - deb.getFullYear();
-      out.textContent = `${years} an(s) (approx.)\n${formatDateFR(deb)} → ${formatDateFR(fin)}`;
+
+      const rawDeb = String(document.getElementById('debIndep').value || '').trim();
+      const rawFin = String(document.getElementById('finIndep').value || '').trim();
+      if (!rawDeb && !rawFin) return;
+
+      if (!deb || !fin) {
+        out.textContent = 'Dates invalides.';
+        return;
+      }
+      if (fin < deb) {
+        out.textContent = 'Date fin antérieure à date début.';
+        return;
+      }
+
+      const r = monthsAndRemainderDays(deb, fin);
+      const years = Math.floor(r.months / 12);
+      const months = r.months % 12;
+      const days = r.remDays;
+
+      const parts = [];
+      if (years) parts.push(`${years} an(s)`);
+      if (months) parts.push(`${months} mois`);
+      if (days || parts.length === 0) parts.push(`${days} jour(s)`);
+
+      out.textContent = `${parts.join(' et ')}
+${formatDateFR(deb)} → ${formatDateFR(fin)}`;
     }
 
     function calculHamon() {
