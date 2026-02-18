@@ -863,7 +863,7 @@ body.dark #updateBanner button{ background: rgba(255,255,255,0.06); border-color
 </div>
 <div aria-live="polite" class="tooltip" id="crmTooltip" role="dialog"></div>
 <script>
-    const LOCAL_VERSION = "0.24";
+    const LOCAL_VERSION = "0.25";
     const VERSION_URL = "https://gist.githubusercontent.com/Lemtosh/ac7fc859fe26f28a17f86fa73c4a4e95/raw/version.json";
 
     function cmpVersion(a, b) {
@@ -1848,23 +1848,35 @@ function initMotoBtn(){
 document.addEventListener('DOMContentLoaded', initMotoBtn);
 
 
-// --- Collapsible panels: Independent & Hamon ---
-function toggleCard(btnId, cardId){
-  const btn = document.getElementById(btnId);
+// --- Collapsible panels: Independent & Hamon (1 seul ouvert) ---
+function setPanelOpen(cardId, btnId, isOpen){
   const card = document.getElementById(cardId);
-  if(!btn || !card) return;
+  const btn  = document.getElementById(btnId);
+  if(!card || !btn) return;
+  card.style.display = isOpen ? 'block' : 'none';
+  btn.classList.toggle('toolBtnActive', !!isOpen);
+}
+
+function toggleExclusive(btnId, cardId, otherBtnId, otherCardId){
+  const card = document.getElementById(cardId);
+  if(!card) return;
+
   const isOpen = (card.style.display === 'block');
-  card.style.display = isOpen ? 'none' : 'block';
-  btn.classList.toggle('toolBtnActive', !isOpen);
+  const willOpen = !isOpen;
+
+  // Si on ouvre, on ferme l'autre.
+  if(willOpen) setPanelOpen(otherCardId, otherBtnId, false);
+
+  setPanelOpen(cardId, btnId, willOpen);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   const b1 = document.getElementById('btnToggleIndep');
-  if(b1) b1.addEventListener('click', () => toggleCard('btnToggleIndep','indepCard'));
-  const b2 = document.getElementById('btnToggleHamon');
-  if(b2) b2.addEventListener('click', () => toggleCard('btnToggleHamon','hamonCard'));
-});
+  if(b1) b1.addEventListener('click', () => toggleExclusive('btnToggleIndep','indepCard','btnToggleHamon','hamonCard'));
 
+  const b2 = document.getElementById('btnToggleHamon');
+  if(b2) b2.addEventListener('click', () => toggleExclusive('btnToggleHamon','hamonCard','btnToggleIndep','indepCard'));
+});
 
 // --- Autosave / restore form fields (prevents loss on refresh) ---
 const AUTOSAVE_KEY = 'outilValidation_autosave_v024';
