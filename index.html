@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Calcul des antécédents (Auto/Moto)</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Outil de validation</title>
+<style>
     :root{
       --bg: #ffffff;
       --text: #111;
@@ -305,189 +306,564 @@
       box-shadow: none !important;
     }
 
-  </style>
+  
+
+/* === Modern grey UI patch (Apple-like) + one-page + dark readability fixes === */
+:root{
+  --accent: #11a9a6;
+  --accent2: #0f8f8c;
+  --pageBg1: #f4f5f7;
+  --pageBg2: #ffffff;
+  --cardBg: rgba(255,255,255,0.92);
+  --cardStroke: rgba(17, 24, 39, 0.10);
+  --softStroke: rgba(17, 24, 39, 0.08);
+  --shadowA: 0 10px 30px rgba(17,24,39,0.10);
+  --shadowB: 0 6px 18px rgba(17,24,39,0.08);
+  --radiusXL: 22px;
+  --radiusL: 18px;
+  --radiusM: 14px;
+  --glow: 0 0 0 4px color-mix(in oklab, var(--accent) 20%, transparent);
+}
+
+body.dark{
+  --pageBg1: #0b0d10;
+  --pageBg2: #0f1216;
+  --cardBg: rgba(20, 23, 28, 0.92);
+  --cardStroke: rgba(255,255,255,0.14);
+  --softStroke: rgba(255,255,255,0.16);
+  --shadowA: 0 16px 44px rgba(0,0,0,0.50);
+  --shadowB: 0 10px 26px rgba(0,0,0,0.36);
+  --glow: 0 0 0 4px rgba(17,169,166,0.18);
+}
+
+body{
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: radial-gradient(900px 520px at 18% 0%, rgba(17,169,166,0.08), transparent 60%),
+              linear-gradient(180deg, var(--pageBg1), var(--pageBg2));
+  overflow: auto;
+}
+
+body.dark{
+  background: radial-gradient(900px 520px at 18% 0%, rgba(17,169,166,0.12), transparent 60%),
+              linear-gradient(180deg, var(--pageBg1), var(--pageBg2));
+}
+
+.app{
+  height: auto;
+  min-height: 100vh;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 42px 22px 78px;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.left{ gap: 14px; }
+.right{ gap: 14px; border-left: none; padding-left: 0; }
+
+.headerRow{
+  width: 100%;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-direction: column;
+  gap: 18px !important;
+  padding: 6px 0 10px;
+}
+
+.headerBtns{ justify-content: center; }
+
+h1{
+  font-size: clamp(28px, 4vw, 54px);
+  letter-spacing: -0.8px;
+  line-height: 1.05;
+  color: color-mix(in oklab, var(--text) 94%, #000);
+}
+
+body.dark h1{ color: var(--text); }
+
+.titleAccent{
+  font-size: 14px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 999px;
+  margin-left: 10px;
+  color: color-mix(in oklab, var(--text) 85%, #000);
+  background: color-mix(in oklab, var(--card) 84%, transparent);
+  border: 1px solid var(--softStroke);
+}
+
+body.dark .titleAccent{ color: rgba(255,255,255,0.88); background: rgba(255,255,255,0.06); }
+
+.card{
+  border: 1px solid var(--cardStroke);
+  border-radius: var(--radiusXL);
+  background: var(--cardBg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--shadowA);
+  padding: 16px;
+}
+
+.cardSmall{ border-radius: var(--radiusL); box-shadow: var(--shadowB); }
+
+/* --- Clickable hover glow (except text fields/textarea) --- */
+button,
+.infoBtn,
+.metaBtn,
+.themeFab,
+.typeSwitchToggle,
+.motoBtn{
+  transition: filter 120ms ease, box-shadow 120ms ease, border-color 120ms ease, background-color 120ms ease;
+}
+
+button:hover,
+.infoBtn:hover,
+.metaBtn:hover,
+.themeFab:hover,
+.typeSwitchToggle:hover,
+.motoBtn:hover{
+  filter: brightness(1.04);
+  box-shadow: var(--shadowB), var(--glow);
+  border-color: color-mix(in oklab, var(--accent) 30%, var(--softStroke));
+}
+
+button{
+  border-radius: 999px;
+  border: 1px solid var(--softStroke);
+  background: rgba(255,255,255,0.70);
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+  box-shadow: 0 1px 0 rgba(17,24,39,0.06);
+}
+
+body.dark button{ background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.16); color: rgba(255,255,255,0.92); }
+
+#btnCrmTable.toolBtnActive,
+#btnCrmTool.toolBtnActive,
+#btnCrmPermit.toolBtnActive{
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 22px rgba(17,169,166,0.20) !important;
+}
+
+#btnCrmTable:active,
+#btnCrmTool:active,
+#btnCrmPermit:active{ transform: none !important; }
+
+.btnClear{ background: #ff3b30; border: none; padding: 10px 16px; font-weight: 700; }
+
+/* Inputs (no hover glow here; only focus) */
+input[type="text"], select, textarea{
+  border-radius: 16px;
+  border: 1px solid var(--softStroke);
+  background: rgba(255,255,255,0.72);
+  color: var(--text);
+  box-shadow: inset 0 1px 0 rgba(17,24,39,0.04);
+}
+
+body.dark input[type="text"], body.dark select, body.dark textarea{ background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.16); color: rgba(255,255,255,0.92); }
+
+body.dark input[type="text"]::placeholder, body.dark textarea::placeholder{ color: rgba(255,255,255,0.55); }
+
+input[type="text"]:focus, select:focus, textarea:focus{ outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 26%, transparent); }
+
+label{ font-size: 12px; font-weight: 600; color: color-mix(in oklab, var(--text) 75%, transparent); }
+body.dark label{ color: rgba(255,255,255,0.76); }
+
+.muted{ color: color-mix(in oklab, var(--text) 55%, transparent); }
+body.dark .muted{ color: rgba(255,255,255,0.70); }
+
+.tableScroll{ border-radius: var(--radiusL); border: 1px solid var(--softStroke); background: rgba(255,255,255,0.66); box-shadow: var(--shadowB); }
+body.dark .tableScroll{ background: rgba(255,255,255,0.03); }
+
+.tableStyled th{ background: rgba(243,244,246,0.98); color: color-mix(in oklab, var(--text) 88%, #000); font-weight: 700; letter-spacing: 0.1px; }
+body.dark .tableStyled th{ background: rgba(22, 27, 34, 0.98); color: rgba(255,255,255,0.92); }
+body.dark .tableStyled td{ color: rgba(255,255,255,0.88); }
+
+canvas{ border-radius: var(--radiusL); border: 1px solid var(--softStroke); background: rgba(255,255,255,0.72); }
+body.dark canvas{ background: rgba(255,255,255,0.04); }
+
+body.dark .interruptions{ border-top-color: rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.78); padding: 8px 10px; border-radius: 12px; }
+
+/* === Moto button (checkbox hidden, label looks like tool button) === */
+.motoToggleRow{ display: flex; align-items: center; gap: 10px; }
+#moto{ position: absolute; opacity: 0; pointer-events: none; }
+
+.motoBtn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 86px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--softStroke);
+  background: rgba(255,255,255,0.70);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+}
+
+body.dark .motoBtn{ background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.16); color: rgba(255,255,255,0.92); }
+
+#moto:checked + .motoBtn{
+  background: rgba(17,169,166,0.16);
+  border-color: rgba(17,169,166,0.55);
+}
+
+/* === Type switch: click anywhere to toggle Auto <-> Moto === */
+.typeSelectHidden{ position: absolute !important; opacity: 0 !important; pointer-events: none !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }
+
+.tableStyled th:nth-child(2),
+.tableStyled td:nth-child(2){ width: 150px !important; }
+
+.typeSwitchToggle{
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  width: 132px;
+  min-width: 132px;
+  height: 30px;
+  padding: 2px;
+  border-radius: 999px;
+  border: 1px solid var(--softStroke);
+  background: rgba(255,255,255,0.55);
+  box-shadow: inset 0 1px 0 rgba(17,24,39,0.05);
+  user-select: none;
+  cursor: pointer;
+}
+
+body.dark .typeSwitchToggle{ background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.16); }
+
+.typeSwitchToggle .typeText{
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  pointer-events: none; /* click anywhere toggles */
+  color: rgba(17,24,39,0.72);
+}
+
+body.dark .typeSwitchToggle .typeText{ color: rgba(255,255,255,0.72); }
+
+.typeSwitchToggle .typePill{
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  width: calc(50% - 2px);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.92);
+  box-shadow: 0 6px 16px rgba(17,24,39,0.12);
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+body.dark .typeSwitchToggle .typePill{ background: rgba(255,255,255,0.14); box-shadow: 0 10px 22px rgba(0,0,0,0.35); }
+
+.typeSwitchToggle.isMoto .typePill{ transform: translateX(100%); }
+
+.typeSwitchToggle.isMoto .typeTextMoto,
+.typeSwitchToggle:not(.isMoto) .typeTextAuto{ color: rgba(17,24,39,0.92); }
+
+body.dark .typeSwitchToggle.isMoto .typeTextMoto,
+body.dark .typeSwitchToggle:not(.isMoto) .typeTextAuto{ color: rgba(255,255,255,0.92); }
+
+/* === One-page layout (desktop) === */
+@media (min-width: 1200px) and (min-height: 760px){
+  html, body{ height: 100%; }
+  body{ overflow: hidden; }
+  .app{ height: 100vh; overflow: hidden; padding: 18px 16px 18px; gap: 14px; }
+  .left, .right{ gap: 12px; }
+  h1{ font-size: clamp(26px, 3.3vw, 44px); }
+  .card{ padding: 12px 14px; }
+  .cardSmall{ padding: 12px 14px; }
+  button{ padding: 9px 14px; font-size: 13px; }
+  input[type="text"], select{ padding: 8px 10px; font-size: 12px; }
+  th, td{ padding: 6px 8px; }
+  .tableStyled th, .tableStyled td{ font-size: 11px; }
+  canvas{ height: 120px; }
+  .interruptions{ max-height: 62px; margin-top: 6px; padding-top: 6px; }
+  .notesBox textarea{ min-height: 78px; padding: 10px 12px; }
+  .right{ flex: 0 1 380px; }
+  .headerRow{ gap: 12px !important; padding: 0 0 6px; }
+}
+
+@media (max-width: 1199.98px), (max-height: 759.98px){ body{ overflow: auto; } }
+
+/* === Periods table: vertical scroll + sticky header === */
+.periodsScroll{ overflow-x: auto; overflow-y: auto; max-height: 270px; }
+@media (min-width: 1200px) and (min-height: 760px){ .periodsScroll{ max-height: 220px; } }
+
+.periodsScroll .tableStyled thead th{ position: sticky; top: 0; z-index: 2; box-shadow: 0 1px 0 rgba(0,0,0,0.15); }
+body.dark .periodsScroll .tableStyled thead th{ box-shadow: 0 1px 0 rgba(255,255,255,0.12); }
+
+
+
+/* === Moto as tool button (replaces checkbox label) === */
+.motoBtnWrap{ display:inline-flex; align-items:center; }
+.motoHidden{ position:absolute !important; opacity:0 !important; pointer-events:none !important; width:1px !important; height:1px !important; overflow:hidden !important; }
+
+.motoToolBtn{
+  min-width: 86px;
+}
+
+.motoToolBtn.toolBtnActive{
+  background: rgba(17,169,166,0.16) !important;
+  border-color: rgba(17,169,166,0.55) !important;
+}
+
+body.dark .motoToolBtn.toolBtnActive{
+  background: rgba(17,169,166,0.22) !important;
+  border-color: rgba(17,169,166,0.65) !important;
+}
+
+
+
+/* === Layout reorg (table + frises) with spacing === */
+.headerRow h1{ width:100%; text-align:center; }
+
+.tableFriseRow{ display:flex; gap:18px; align-items:flex-start; margin-top: 10px; }
+.tableCol{ flex:1 1 760px; min-width:0; display:flex; flex-direction:column; gap:12px; }
+.friseCol{ flex:0 0 420px; min-width:0; display:flex; flex-direction:column; gap:12px; }
+
+#totalMois, #interruptionTxt{ margin-top: 4px; }
+.notesBox{ margin-top: 6px; }
+
+@media (max-width: 1100px){
+  .tableFriseRow{ flex-direction:column; }
+  .friseCol{ flex:1 1 auto; width:100%; }
+}
+
+/* Indep + Hamon buttons: side-by-side */
+.sectionToggleRow{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top: 4px; }
+.sectionToggleRow .sectionToggleBtn{ margin-top: 0 !important; }
+
+.sectionToggleBtn.toolBtnActive{ background: rgba(17,169,166,0.16) !important; border-color: rgba(17,169,166,0.55) !important; }
+body.dark .sectionToggleBtn.toolBtnActive{ background: rgba(17,169,166,0.22) !important; border-color: rgba(17,169,166,0.65) !important; }
+
+/* Type switch (light mode): improve readability / selection */
+body:not(.dark) .typeSwitchToggle{ background: rgba(17,24,39,0.10); border-color: rgba(17,24,39,0.14); }
+body:not(.dark) .typeSwitchToggle .typePill{ background: color-mix(in oklab, var(--accent) 10%, rgba(255,255,255,0.95)); border: 1px solid rgba(17,24,39,0.10); }
+
+
+/* Update banner button */
+#updateBanner{ display:none; }
+#updateBanner button{ padding: 7px 12px; border-radius: 999px; border: 1px solid var(--softStroke, var(--border2)); background: rgba(255,255,255,0.70); color: var(--text); font-weight: 700; cursor: pointer; }
+body.dark #updateBanner button{ background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.16); color: rgba(255,255,255,0.92); }
+#updateBanner button:hover{ filter: brightness(1.04); }
+
+</style>
 </head>
-
 <body>
-  <div class="app">
-    <div class="left">
-      <div class="row" style="justify-content: space-between; gap: 10px;">
-        <h1>Calcul des antécédents <span class="titleAccent">(Auto / Moto)</span></h1>
-
-        <div class="row" style="gap:8px;">
-          <button id="btnCrmTable" type="button" title="Afficher/Masquer le tableau CRM">Tableau CRM</button>
-          <button id="btnCrmTool" type="button" title="Afficher/Masquer l’outil de calcul CRM">Outil CRM</button>
-          <button id="btnCrmPermit" type="button" title="Afficher/Masquer l’outil CRM max via date de permis">CRM max (permis)</button>
-        </div>
-      </div>
-
-      <button id="btnTheme" type="button" class="themeFab" aria-label="Basculer le thème" title="Basculer le thème">
-        <span id="themeIcon" aria-hidden="true"></span>
-      </button>
-
-      <div id="updateBanner">
-        <div>
-          <span id="updateText"></span>
-          &nbsp; <a id="updateLink" href="#" target="_blank" rel="noopener">Télécharger la version à jour</a>
-        </div>
-      </div>
-
-      <div class="card cardSmall" id="crmTableWrap">
-        <h2>Évolution standard du CRM</h2>
-        <div class="muted" style="margin-top:6px;">
+<div class="app">
+<div class="left">
+<div class="row headerRow" style="justify-content: space-between; gap: 10px;; text-align:center; justify-content:center">
+<h1>Outil de validation</h1>
+<div class="row headerBtns" style="gap:8px;">
+<button class="pillBtn" id="btnCrmTable" title="Afficher/Masquer le tableau CRM" type="button">Tableau CRM</button>
+<button class="pillBtn" id="btnCrmTool" title="Afficher/Masquer l’outil de calcul CRM" type="button">Outil CRM</button>
+<button class="pillBtn" id="btnCrmPermit" title="Afficher/Masquer l’outil CRM max via date de permis" type="button">CRM max (permis)</button>
+</div>
+</div>
+<button aria-label="Basculer le thème" class="themeFab" id="btnTheme" title="Basculer le thème" type="button">
+<span aria-hidden="true" id="themeIcon"></span>
+</button>
+<div id="updateBanner">
+<div>
+  <span id="updateText"></span>
+  &nbsp;
+  <button id="btnUpdateNow" type="button" title="Recharge la page pour charger la dernière version">Mettre à jour</button>
+</div>
+</div>
+<div class="card cardSmall" id="crmTableWrap">
+<h2>Évolution standard du CRM</h2>
+<div class="muted" style="margin-top:6px;">
           Tableau standard (valeurs arrondies) : 0 an = 1,00 ; 13 ans = 0,50.
         </div>
-        <div class="tableScroll" style="margin-top:8px;">
-          <table id="crmTable" class="tableStyled">
-            <thead>
-              <tr><th>Année sans sinistre</th><th>CRM</th></tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card cardSmall" id="crmToolWrap">
-        <h2>Outil de calcul CRM</h2>
-
-        <div class="row" style="margin-top:8px; gap:8px;">
-          <label for="crmToolInput">CRM :</label>
-          <input type="text" id="crmToolInput" maxlength="10" placeholder="1,00" inputmode="decimal" />
-          <div class="result" id="crmToolResult" style="min-width:180px;"></div>
-        </div>
-
-        <div class="row" style="margin-top:8px; gap:8px;">
-          <button id="btnCrmNone" type="button">Aucun sinistre responsable</button>
-          <button id="btnCrm50" type="button">Sinistre 50%</button>
-          <button id="btnCrm100" type="button">Sinistre 100%</button>
-        </div>
-
-        <div class="crmTrail" id="crmToolTrail"></div>
-
-        <div class="muted" style="margin-top:6px;">
+<div class="tableScroll" style="margin-top:8px;">
+<table class="tableStyled" id="crmTable">
+<thead>
+<tr><th>Année sans sinistre</th><th>CRM</th></tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+</div>
+<div class="card cardSmall" id="crmToolWrap">
+<h2>Outil de calcul CRM</h2>
+<div class="row" style="margin-top:8px; gap:8px;">
+<label for="crmToolInput">CRM :</label>
+<input id="crmToolInput" inputmode="decimal" maxlength="10" placeholder="1,00" type="text"/>
+<div class="result" id="crmToolResult" style="min-width:180px;"></div>
+</div>
+<div class="row" style="margin-top:8px; gap:8px;">
+<button id="btnCrmNone" type="button">Aucun sinistre responsable</button>
+<button id="btnCrm50" type="button">Sinistre 50%</button>
+<button id="btnCrm100" type="button">Sinistre 100%</button>
+</div>
+<div class="crmTrail" id="crmToolTrail"></div>
+<div class="muted" style="margin-top:6px;">
           Résultat tronqué à 2 décimales (pas d’arrondi).
         </div>
-      </div>
-
-      <div class="card cardSmall" id="crmPermitWrap">
-        <h2>CRM maximum (date de permis)</h2>
-        <div class="muted" style="margin-top:6px;">
+</div>
+<div class="card cardSmall" id="crmPermitWrap">
+<h2>CRM maximum (date de permis)</h2>
+<div class="muted" style="margin-top:6px;">
           Règle : on applique le tableau CRM. Une nouvelle “année” est accordée dès +9 mois sur l’année en cours.
         </div>
+<div class="row" style="margin-top:8px; gap:8px;">
+<label for="permitDate">Date de permis :</label>
+<input id="permitDate" maxlength="10" type="text"/>
+<div class="result" id="permitCrmResult" style="min-width:220px;"></div>
+</div>
+<div class="muted" id="permitCrmDetail" style="margin-top:6px;"></div>
+</div>
+<div class="row">
+<label for="dateEffet">Date d'effet :</label>
+<input id="dateEffet" maxlength="10" type="text"/>
+<div class="motoBtnWrap"> <input class="motoHidden" id="moto" type="checkbox"/> <button aria-pressed="false" class="pillBtn motoToolBtn" id="btnMoto" title="Fenêtre moto : 24 mois" type="button">Moto</button></div>
+<button id="btnClear" type="button">Effacer</button>
+</div>
 
-        <div class="row" style="margin-top:8px; gap:8px;">
-          <label for="permitDate">Date de permis :</label>
-          <input type="text" id="permitDate" maxlength="10" />
-          <div class="result" id="permitCrmResult" style="min-width:220px;"></div>
-        </div>
 
-        <div class="muted" id="permitCrmDetail" style="margin-top:6px;"></div>
-      </div>
 
-      <div class="row">
-        <label for="dateEffet">Date d'effet :</label>
-        <input type="text" id="dateEffet" maxlength="10" />
-        <label><input type="checkbox" id="moto" /> Case moto (fenêtre = 24 mois, Auto et Moto)</label>
-        <button id="btnClear" type="button">Effacer</button>
-      </div>
 
-      <div class="tableScroll">
-        <table id="periodsTable" class="tableStyled">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Type</th>
-              <th>Début</th>
-              <th>Fin</th>
-              <th>Mois</th>
-              <th>
-                <span class="thInfoWrap">
+
+
+<div class="tableFriseRow"><div class="tableCol"><div class="tableScroll periodsScroll">
+<table class="tableStyled" id="periodsTable">
+<thead>
+<tr>
+<th>#</th>
+<th>Type</th>
+<th>Début</th>
+<th>Fin</th>
+<th>Mois</th>
+<th>
+<span class="thInfoWrap">
                   CRM résiliation
-                  <button id="crmInfoBtn" class="infoBtn" type="button" aria-label="Info CRM résiliation" title="Info">i</button>
-                </span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>1</td><td><select id="type1"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb1" maxlength="10"></td><td><input type="text" id="fin1" maxlength="10"></td><td id="mois1"></td><td><input class="crmInput" type="text" id="crm1" maxlength="8"></td></tr>
-            <tr><td>2</td><td><select id="type2"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb2" maxlength="10"></td><td><input type="text" id="fin2" maxlength="10"></td><td id="mois2"></td><td><input class="crmInput" type="text" id="crm2" maxlength="8"></td></tr>
-            <tr><td>3</td><td><select id="type3"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb3" maxlength="10"></td><td><input type="text" id="fin3" maxlength="10"></td><td id="mois3"></td><td><input class="crmInput" type="text" id="crm3" maxlength="8"></td></tr>
-            <tr><td>4</td><td><select id="type4"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb4" maxlength="10"></td><td><input type="text" id="fin4" maxlength="10"></td><td id="mois4"></td><td><input class="crmInput" type="text" id="crm4" maxlength="8"></td></tr>
-            <tr><td>5</td><td><select id="type5"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb5" maxlength="10"></td><td><input type="text" id="fin5" maxlength="10"></td><td id="mois5"></td><td><input class="crmInput" type="text" id="crm5" maxlength="8"></td></tr>
-            <tr><td>6</td><td><select id="type6"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb6" maxlength="10"></td><td><input type="text" id="fin6" maxlength="10"></td><td id="mois6"></td><td><input class="crmInput" type="text" id="crm6" maxlength="8"></td></tr>
-            <tr><td>7</td><td><select id="type7"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb7" maxlength="10"></td><td><input type="text" id="fin7" maxlength="10"></td><td id="mois7"></td><td><input class="crmInput" type="text" id="crm7" maxlength="8"></td></tr>
-            <tr><td>8</td><td><select id="type8"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb8" maxlength="10"></td><td><input type="text" id="fin8" maxlength="10"></td><td id="mois8"></td><td><input class="crmInput" type="text" id="crm8" maxlength="8"></td></tr>
-            <tr><td>9</td><td><select id="type9"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb9" maxlength="10"></td><td><input type="text" id="fin9" maxlength="10"></td><td id="mois9"></td><td><input class="crmInput" type="text" id="crm9" maxlength="8"></td></tr>
-            <tr><td>10</td><td><select id="type10"><option value="AUTO" selected>Auto</option><option value="MOTO">Moto</option></select></td><td><input type="text" id="deb10" maxlength="10"></td><td><input type="text" id="fin10" maxlength="10"></td><td id="mois10"></td><td><input class="crmInput" type="text" id="crm10" maxlength="8"></td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="result" id="totalMois"></div>
-      <div class="result" id="interruptionTxt"></div>
-      <div class="error" id="errors"></div>
-
-      <div class="card cardSmall">
-        <h2>Calcul indépendant d'une période</h2>
-        <div class="row" style="margin-top:6px;">
-          <label for="debIndep">Début :</label>
-          <input type="text" id="debIndep" maxlength="10" >
-          <label for="finIndep">Fin :</label>
-          <input type="text" id="finIndep" maxlength="10" >
-        </div>
-        <div id="resultIndep" class="result" style="margin-top:8px;"></div>
-        <div class="muted">Résultat en années / mois / jours (calcul calendaire).</div>
-      </div>
-
-      <div class="card cardSmall">
-        <h2>Hamon (Mieux Assuré)</h2>
-        <div class="row" style="margin-top:6px;">
-          <label for="dateEnvoiHamon">Envoi :</label>
-          <input type="text" id="dateEnvoiHamon" maxlength="10">
-        </div>
-        <div id="resultHamon" class="result" style="margin-top:8px;"></div>
-        <div class="muted">Effet = envoi + 33 jours.</div>
-      </div>
-
-      <div class="metaWrap">
-        <button id="btnMeta" class="metaBtn" type="button" aria-expanded="false">Infos auteur / version</button>
-      </div>
-      <div class="metaPanel" id="metaPanel">
-        <div><strong>© 2026 PHILLIPPON Johann</strong> — Tous droits réservés.</div>
-        <div style="margin-top:6px;">
+                  <button aria-label="Info CRM résiliation" class="infoBtn" id="crmInfoBtn" title="Info" type="button">i</button>
+</span>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>1</td><td><select class="typeSelectHidden" id="type1"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 1 (Auto/Moto)" class="typeSwitchToggle" data-target="type1" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb1" maxlength="10" type="text"/></td><td><input id="fin1" maxlength="10" type="text"/></td><td id="mois1"></td><td><input class="crmInput" id="crm1" maxlength="8" type="text"/></td></tr>
+<tr><td>2</td><td><select class="typeSelectHidden" id="type2"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 2 (Auto/Moto)" class="typeSwitchToggle" data-target="type2" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb2" maxlength="10" type="text"/></td><td><input id="fin2" maxlength="10" type="text"/></td><td id="mois2"></td><td><input class="crmInput" id="crm2" maxlength="8" type="text"/></td></tr>
+<tr><td>3</td><td><select class="typeSelectHidden" id="type3"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 3 (Auto/Moto)" class="typeSwitchToggle" data-target="type3" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb3" maxlength="10" type="text"/></td><td><input id="fin3" maxlength="10" type="text"/></td><td id="mois3"></td><td><input class="crmInput" id="crm3" maxlength="8" type="text"/></td></tr>
+<tr><td>4</td><td><select class="typeSelectHidden" id="type4"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 4 (Auto/Moto)" class="typeSwitchToggle" data-target="type4" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb4" maxlength="10" type="text"/></td><td><input id="fin4" maxlength="10" type="text"/></td><td id="mois4"></td><td><input class="crmInput" id="crm4" maxlength="8" type="text"/></td></tr>
+<tr><td>5</td><td><select class="typeSelectHidden" id="type5"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 5 (Auto/Moto)" class="typeSwitchToggle" data-target="type5" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb5" maxlength="10" type="text"/></td><td><input id="fin5" maxlength="10" type="text"/></td><td id="mois5"></td><td><input class="crmInput" id="crm5" maxlength="8" type="text"/></td></tr>
+<tr><td>6</td><td><select class="typeSelectHidden" id="type6"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 6 (Auto/Moto)" class="typeSwitchToggle" data-target="type6" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb6" maxlength="10" type="text"/></td><td><input id="fin6" maxlength="10" type="text"/></td><td id="mois6"></td><td><input class="crmInput" id="crm6" maxlength="8" type="text"/></td></tr>
+<tr><td>7</td><td><select class="typeSelectHidden" id="type7"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 7 (Auto/Moto)" class="typeSwitchToggle" data-target="type7" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb7" maxlength="10" type="text"/></td><td><input id="fin7" maxlength="10" type="text"/></td><td id="mois7"></td><td><input class="crmInput" id="crm7" maxlength="8" type="text"/></td></tr>
+<tr><td>8</td><td><select class="typeSelectHidden" id="type8"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 8 (Auto/Moto)" class="typeSwitchToggle" data-target="type8" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb8" maxlength="10" type="text"/></td><td><input id="fin8" maxlength="10" type="text"/></td><td id="mois8"></td><td><input class="crmInput" id="crm8" maxlength="8" type="text"/></td></tr>
+<tr><td>9</td><td><select class="typeSelectHidden" id="type9"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 9 (Auto/Moto)" class="typeSwitchToggle" data-target="type9" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb9" maxlength="10" type="text"/></td><td><input id="fin9" maxlength="10" type="text"/></td><td id="mois9"></td><td><input class="crmInput" id="crm9" maxlength="8" type="text"/></td></tr>
+<tr><td>10</td><td><select class="typeSelectHidden" id="type10"><option selected="" value="AUTO">Auto</option><option value="MOTO">Moto</option></select>
+<div aria-checked="false" aria-label="Type 10 (Auto/Moto)" class="typeSwitchToggle" data-target="type10" role="switch" tabindex="0">
+<span class="typeText typeTextAuto">Auto</span>
+<span class="typeText typeTextMoto">Moto</span>
+<span aria-hidden="true" class="typePill"></span>
+</div></td><td><input id="deb10" maxlength="10" type="text"/></td><td><input id="fin10" maxlength="10" type="text"/></td><td id="mois10"></td><td><input class="crmInput" id="crm10" maxlength="8" type="text"/></td></tr>
+</tbody>
+</table>
+</div><div class="result" id="totalMois"></div><div class="result" id="interruptionTxt"></div><div class="card cardSmall notesBox">
+<h2>Notes</h2>
+<textarea id="notes" placeholder="Notes / observations..."></textarea>
+</div><div class="error" id="errors"></div><div class="sectionToggleRow"><button class="pillBtn sectionToggleBtn" id="btnToggleIndep" type="button">Calcul indépendant</button><button class="pillBtn sectionToggleBtn" id="btnToggleHamon" type="button">Hamon</button></div><div class="card cardSmall" id="indepCard" style="display:none;">
+<h2>Calcul indépendant d'une période</h2>
+<div class="row" style="margin-top:6px;">
+<label for="debIndep">Début :</label>
+<input id="debIndep" maxlength="10" type="text"/>
+<label for="finIndep">Fin :</label>
+<input id="finIndep" maxlength="10" type="text"/>
+</div>
+<div class="result" id="resultIndep" style="margin-top:8px;"></div>
+<div class="muted">Résultat en années / mois / jours (calcul calendaire).</div>
+</div><div class="card cardSmall" id="hamonCard" style="display:none;">
+<h2>Hamon (Mieux Assuré)</h2>
+<div class="row" style="margin-top:6px;">
+<label for="dateEnvoiHamon">Envoi :</label>
+<input id="dateEnvoiHamon" maxlength="10" type="text"/>
+</div>
+<div class="result" id="resultHamon" style="margin-top:8px;"></div>
+<div class="muted">Effet = envoi + 33 jours.</div>
+</div></div><div class="friseCol"><div class="card" id="cardAuto">
+<h2>Frise AUTO</h2>
+<div class="muted" id="legendAuto" style="margin:6px 0 6px 0;"></div>
+<canvas height="136" id="canvasAuto" width="420"></canvas>
+<div class="interruptions" id="interruptionsAuto"></div>
+</div><div class="card" id="cardMoto" style="display:none;">
+<h2>Frise MOTO</h2>
+<div class="muted" id="legendMoto" style="margin:6px 0 6px 0;"></div>
+<canvas height="136" id="canvasMoto" width="420"></canvas>
+<div class="interruptions" id="interruptionsMoto"></div>
+</div></div></div><div class="metaWrap">
+<button aria-expanded="false" class="metaBtn" id="btnMeta" type="button">Infos auteur / version</button>
+</div>
+<div class="metaPanel" id="metaPanel">
+<div><strong>© 2026 PHILLIPPON Johann</strong> — Tous droits réservés.</div>
+<div style="margin-top:6px;">
           Consultation autorisée. Toute reproduction/copie (y compris interne), modification/adaptation, diffusion/partage, ou usage commercial,
           total ou partiel, est interdite sans autorisation écrite préalable de l’auteur.
         </div>
-        <div class="mutedLine" style="margin-top:8px;" id="metaVersionLine"></div>
-      </div>
-    </div>
+<div class="mutedLine" id="metaVersionLine" style="margin-top:8px;"></div>
+</div>
+</div>
 
-    <div class="right">
-      <div class="card" id="cardAuto">
-        <h2>Frise AUTO</h2>
-        <div class="muted" id="legendAuto" style="margin:6px 0 6px 0;"></div>
-        <canvas id="canvasAuto" width="420" height="136"></canvas>
-        <div class="interruptions" id="interruptionsAuto"></div>
-      </div>
-
-      <div class="card" id="cardMoto" style="display:none;">
-        <h2>Frise MOTO</h2>
-        <div class="muted" id="legendMoto" style="margin:6px 0 6px 0;"></div>
-        <canvas id="canvasMoto" width="420" height="136"></canvas>
-        <div class="interruptions" id="interruptionsMoto"></div>
-      </div>
-
-      <div class="card cardSmall notesBox">
-        <h2>Notes</h2>
-        <textarea id="notes" placeholder="Notes / observations..."></textarea>
-      </div>
-    </div>
-  </div>
-
-  <div id="crmTooltip" class="tooltip" role="dialog" aria-live="polite"></div>
-
-  <script>
-    const LOCAL_VERSION = "0.23";
+</div>
+<div aria-live="polite" class="tooltip" id="crmTooltip" role="dialog"></div>
+<script>
+    const LOCAL_VERSION = "0.24";
     const VERSION_URL = "https://gist.githubusercontent.com/Lemtosh/ac7fc859fe26f28a17f86fa73c4a4e95/raw/version.json";
 
     function cmpVersion(a, b) {
@@ -513,8 +889,8 @@
         if (remoteVersion && downloadUrl && cmpVersion(remoteVersion, LOCAL_VERSION) > 0) {
           document.getElementById("updateText").textContent =
             `Nouvelle version disponible (${remoteVersion}). Vous utilisez la ${LOCAL_VERSION}.`;
-          document.getElementById("updateLink").href = downloadUrl;
-          document.getElementById("updateBanner").style.display = "block";
+          /* updateLink removed */
+          document.getElementById("updateBanner").style.display = "block";wireUpdateNow(remoteVersion);
         }
       } catch (e) {}
     }
@@ -1392,6 +1768,287 @@ ${formatDateFR(deb)} → ${formatDateFR(fin)}`;
       updateCrmToolUI();
       updatePermitCrm();
     });
-  </script>
+  
+
+// --- UI enhancement: toggle switch Auto<->Moto for each type select (keeps calculations unchanged) ---
+function syncTypeToggles(){
+  document.querySelectorAll('.typeSwitchToggle').forEach(sw => {
+    const targetId = sw.getAttribute('data-target');
+    const sel = document.getElementById(targetId);
+    if(!sel) return;
+    const isMoto = (sel.value === 'MOTO');
+    sw.classList.toggle('isMoto', isMoto);
+    sw.setAttribute('aria-checked', isMoto ? 'true' : 'false');
+  });
+}
+
+function toggleTypeSwitch(sw){
+  const targetId = sw.getAttribute('data-target');
+  const sel = document.getElementById(targetId);
+  if(!sel) return;
+  const next = (sel.value === 'MOTO') ? 'AUTO' : 'MOTO';
+  sel.value = next;
+  sel.dispatchEvent(new Event('change', { bubbles: true }));
+  syncTypeToggles();
+}
+
+function initTypeToggles(){
+  document.querySelectorAll('.typeSwitchToggle').forEach(sw => {
+    sw.addEventListener('click', (e) => {
+      e.preventDefault();
+      toggleTypeSwitch(sw);
+    });
+    sw.addEventListener('keydown', (e) => {
+      if(e.key === ' ' || e.key === 'Enter'){
+        e.preventDefault();
+        toggleTypeSwitch(sw);
+      }
+    });
+  });
+
+  // Keep toggles in sync after reset
+  const clearBtn = document.getElementById('btnClear');
+  if(clearBtn){
+    clearBtn.addEventListener('click', () => setTimeout(syncTypeToggles, 0));
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initTypeToggles();
+  syncTypeToggles();
+});
+
+
+// --- UI enhancement: Moto tool button (keeps #moto checkbox for logic) ---
+function syncMotoBtn(){
+  const cb = document.getElementById('moto');
+  const btn = document.getElementById('btnMoto');
+  if(!cb || !btn) return;
+  const on = !!cb.checked;
+  btn.classList.toggle('toolBtnActive', on);
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+}
+
+function initMotoBtn(){
+  const cb = document.getElementById('moto');
+  const btn = document.getElementById('btnMoto');
+  if(!cb || !btn) return;
+
+  btn.addEventListener('click', () => {
+    cb.checked = !cb.checked;
+    cb.dispatchEvent(new Event('input', { bubbles: true }));
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+    syncMotoBtn();
+  });
+
+  cb.addEventListener('change', syncMotoBtn);
+  syncMotoBtn();
+}
+
+document.addEventListener('DOMContentLoaded', initMotoBtn);
+
+
+// --- Collapsible panels: Independent & Hamon ---
+function toggleCard(btnId, cardId){
+  const btn = document.getElementById(btnId);
+  const card = document.getElementById(cardId);
+  if(!btn || !card) return;
+  const isOpen = (card.style.display === 'block');
+  card.style.display = isOpen ? 'none' : 'block';
+  btn.classList.toggle('toolBtnActive', !isOpen);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const b1 = document.getElementById('btnToggleIndep');
+  if(b1) b1.addEventListener('click', () => toggleCard('btnToggleIndep','indepCard'));
+  const b2 = document.getElementById('btnToggleHamon');
+  if(b2) b2.addEventListener('click', () => toggleCard('btnToggleHamon','hamonCard'));
+});
+
+
+// --- Autosave / restore form fields (prevents loss on refresh) ---
+const AUTOSAVE_KEY = 'outilValidation_autosave_v024';
+
+function getFieldValue(el){
+  const tag = (el.tagName || '').toLowerCase();
+  const type = (el.getAttribute('type') || '').toLowerCase();
+  if(tag === 'input' && (type === 'checkbox' || type === 'radio')) return !!el.checked;
+  return String(el.value ?? '');
+}
+
+function setFieldValue(el, val){
+  const tag = (el.tagName || '').toLowerCase();
+  const type = (el.getAttribute('type') || '').toLowerCase();
+  if(tag === 'input' && (type === 'checkbox' || type === 'radio')){
+    el.checked = !!val;
+  }else{
+    el.value = (val ?? '');
+  }
+}
+
+function listSavableFields(){
+  // Only elements with an id (stable key)
+  const selectors = [
+    'input[id]',
+    'select[id]',
+    'textarea[id]'
+  ].join(',');
+  const all = Array.from(document.querySelectorAll(selectors));
+  // Exclude buttons and hidden helper fields if ever present
+  return all.filter(el => {
+    const tag = (el.tagName||'').toLowerCase();
+    if(tag === 'input'){
+      const t = (el.getAttribute('type')||'text').toLowerCase();
+      if(t === 'button' || t === 'submit' || t === 'reset') return false;
+    }
+    return true;
+  });
+}
+
+function buildSavePayload(){
+  const payload = { ts: Date.now(), fields: {} };
+  listSavableFields().forEach(el => {
+    const id = el.id;
+    if(!id) return;
+    payload.fields[id] = { v: getFieldValue(el) };
+  });
+
+  // Save a few UI states that matter for user (optional)
+  const indep = document.getElementById('indepCard');
+  const hamon = document.getElementById('hamonCard');
+  if(indep) payload.fields.__indepOpen = { v: (indep.style.display === 'block') };
+  if(hamon) payload.fields.__hamonOpen = { v: (hamon.style.display === 'block') };
+
+  return payload;
+}
+
+function saveAllFields(){
+  try{
+    const payload = buildSavePayload();
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+  }catch(e){
+    // Storage may be blocked; ignore
+  }
+}
+
+function restoreAllFields(){
+  let raw = null;
+  try{ raw = localStorage.getItem(AUTOSAVE_KEY); }catch(e){ return; }
+  if(!raw) return;
+
+  let payload = null;
+  try{ payload = JSON.parse(raw); }catch(e){ return; }
+  if(!payload || !payload.fields) return;
+
+  // Restore regular fields
+  Object.keys(payload.fields).forEach(id => {
+    if(id.startsWith('__')) return;
+    const el = document.getElementById(id);
+    if(!el) return;
+    setFieldValue(el, payload.fields[id].v);
+    // Trigger existing logic (calculs, UI)
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+
+  // Restore collapsible states if present
+  const indep = document.getElementById('indepCard');
+  const hamon = document.getElementById('hamonCard');
+  if(indep && payload.fields.__indepOpen) indep.style.display = payload.fields.__indepOpen.v ? 'block' : 'none';
+  if(hamon && payload.fields.__hamonOpen) hamon.style.display = payload.fields.__hamonOpen.v ? 'block' : 'none';
+
+  // Sync button states if your toggle logic uses classes
+  const bIndep = document.getElementById('btnToggleIndep');
+  if(bIndep && indep) bIndep.classList.toggle('toolBtnActive', indep.style.display === 'block');
+  const bHamon = document.getElementById('btnToggleHamon');
+  if(bHamon && hamon) bHamon.classList.toggle('toolBtnActive', hamon.style.display === 'block');
+
+  // Moto UI sync if function exists
+  if(typeof syncMotoBtn === 'function') syncMotoBtn();
+}
+
+function installAutosave(){
+  let t = null;
+  const schedule = () => {
+    clearTimeout(t);
+    t = setTimeout(saveAllFields, 250);
+  };
+  listSavableFields().forEach(el => {
+    el.addEventListener('input', schedule);
+    el.addEventListener('change', schedule);
+  });
+
+  // If user clicks Effacer, also clear autosave
+  const clearBtn = document.getElementById('btnClear');
+  if(clearBtn){
+    clearBtn.addEventListener('click', () => {
+      try{ localStorage.removeItem(AUTOSAVE_KEY); }catch(e){}
+    });
+  }
+}
+
+// --- Update UX: in-page refresh when a new version is available ---
+function reloadWithBust(versionTag){
+  // Works when served over http(s). For file://, reloading won't fetch a newer HTML.
+  if(!(location.protocol === 'http:' || location.protocol === 'https:')) return;
+  saveAllFields();
+  const url = new URL(window.location.href);
+  if(versionTag) url.searchParams.set('v', String(versionTag));
+  url.searchParams.set('ts', String(Date.now()));
+  window.location.replace(url.toString());
+}
+
+function wireUpdateNow(remoteVersion){
+  const btn = document.getElementById('btnUpdateNow');
+  if(!btn) return;
+  btn.onclick = () => reloadWithBust(remoteVersion);
+}
+
+// --- Optional: check for update periodically so banner can appear even if page stays open ---
+function startPeriodicUpdateCheck(){
+  if(typeof checkForUpdate !== 'function') return;
+  setInterval(checkForUpdate, 30 * 60 * 1000); // every 30 min
+}
+
+// --- Optional: daily refresh at 08:00 (local time) to reduce outdated clients ---
+function ymdLocal(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const da = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${da}`;
+}
+
+function msUntilNextLocal(hour, minute){
+  const now = new Date();
+  const next = new Date(now);
+  next.setHours(hour, minute, 0, 0);
+  if(next <= now) next.setDate(next.getDate() + 1);
+  return next - now;
+}
+
+function scheduleDailyRefreshAt0800(){
+  if(!(location.protocol === 'http:' || location.protocol === 'https:')) return;
+  const delay = msUntilNextLocal(8, 0) + Math.floor(Math.random() * 30000); // jitter 0-30s
+  setTimeout(() => {
+    try{
+      const key = 'dailyRefreshDone';
+      const today = ymdLocal(new Date());
+      if(localStorage.getItem(key) !== today){
+        localStorage.setItem(key, today);
+        reloadWithBust(today);
+        return;
+      }
+    }catch(e){}
+    scheduleDailyRefreshAt0800();
+  }, delay);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  restoreAllFields();
+  installAutosave();
+  startPeriodicUpdateCheck();
+  scheduleDailyRefreshAt0800();
+});
+</script>
 </body>
 </html>
