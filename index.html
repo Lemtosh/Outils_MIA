@@ -156,6 +156,8 @@
     #crmTableWrap table{ width: 100%; min-width: 0; table-layout: auto; }
     #crmTableWrap th, #crmTableWrap td{ font-size: 12px; padding: 5px 6px; }
 
+    #crmToolWrap{ display:none; margin-top: 10px; }
+
     .notesBox{ display:flex; flex-direction:column; }
     .notesBox textarea{
       flex: 1;
@@ -195,6 +197,37 @@
       width: 100%;
       box-sizing: border-box;
     }
+
+    /* Bouton thème en bas à gauche */
+    .themeFab{
+      position: fixed;
+      bottom: 12px;
+      left: 12px;
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    }
+    .themeFab:hover{ filter: brightness(0.98); }
+    #themeIcon{ font-size: 18px; line-height: 1; }
+
+    /* Outil CRM - historique */
+    .crmTrail{
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed var(--border2);
+      font-size: 12px;
+      color: var(--muted);
+      white-space: pre-line;
+    }
+    .crmTrail strong{ color: var(--text); }
   </style>
 </head>
 <body>
@@ -202,11 +235,17 @@
     <div class="left">
       <div class="row" style="justify-content: space-between; gap: 10px;">
         <h1>Calcul des antécédents <span class="titleAccent">(Auto / Moto)</span></h1>
+
         <div class="row" style="gap:8px;">
-          <button id="btnDark" type="button" title="Basculer en mode sombre">Mode sombre</button>
           <button id="btnCrmTable" type="button" title="Afficher/Masquer le tableau CRM">Tableau CRM</button>
+          <button id="btnCrmTool" type="button" title="Afficher/Masquer l’outil de calcul CRM">Outil CRM</button>
         </div>
       </div>
+
+      <!-- Bouton thème flottant -->
+      <button id="btnTheme" type="button" class="themeFab" aria-label="Basculer le thème" title="Basculer le thème">
+        <span id="themeIcon" aria-hidden="true"></span>
+      </button>
 
       <div id="updateBanner">
         <div>
@@ -230,6 +269,28 @@
             </thead>
             <tbody></tbody>
           </table>
+        </div>
+      </div>
+
+      <div class="card cardSmall" id="crmToolWrap">
+        <h2>Outil de calcul CRM</h2>
+
+        <div class="row" style="margin-top:8px; gap:8px;">
+          <label for="crmToolInput">CRM :</label>
+          <input type="text" id="crmToolInput" maxlength="10" placeholder="1,00" inputmode="decimal" />
+          <div class="result" id="crmToolResult" style="min-width:180px;"></div>
+        </div>
+
+        <div class="row" style="margin-top:8px; gap:8px;">
+          <button id="btnCrmNone" type="button">Aucun sinistre responsable</button>
+          <button id="btnCrm50" type="button">Sinistre 50%</button>
+          <button id="btnCrm100" type="button">Sinistre 100%</button>
+        </div>
+
+        <div class="crmTrail" id="crmToolTrail"></div>
+
+        <div class="muted" style="margin-top:6px;">
+          Résultat tronqué à 2 décimales (pas d’arrondi).
         </div>
       </div>
 
@@ -315,7 +376,7 @@
   </div>
 
   <script>
-    const LOCAL_VERSION = "0.20";
+    const LOCAL_VERSION = "0.21";
     const VERSION_URL = "https://gist.githubusercontent.com/Lemtosh/ac7fc859fe26f28a17f86fa73c4a4e95/raw/version.json";
 
     function setCredit(){
@@ -351,10 +412,16 @@
       } catch (e) {}
     }
 
+    /* ===== Thème (bouton en bas à gauche + icônes) ===== */
+    function updateThemeButton(){
+      const isDark = document.body.classList.contains('dark');
+      const icon = document.getElementById('themeIcon');
+      icon.textContent = isDark ? '☀' : '🌙';
+    }
+
     function applyTheme(isDark) {
       document.body.classList.toggle('dark', !!isDark);
-      const btn = document.getElementById('btnDark');
-      btn.textContent = document.body.classList.contains('dark') ? 'Mode clair' : 'Mode sombre';
+      updateThemeButton();
     }
     function initTheme() {
       const saved = localStorage.getItem('theme');
@@ -406,6 +473,108 @@
       wrap.style.display = isOpen ? 'none' : 'block';
       document.getElementById('btnCrmTable').textContent = isOpen ? 'Tableau CRM' : 'Masquer tableau CRM';
       if (!isOpen) renderCrmTable();
+    }
+
+    /* ===== Outil CRM (cumulatif + historique + reset au focus input) ===== */
+    const CRM_ACTIONS = [
+      { key: 'none', label: 'Aucun sinistre responsable', factor: 0.95, short: '×0,95' },
+      { key: '50',   label: 'Sinistre 50%',              factor: 1.125, short: '×1,125' },
+      { key: '100',  label: 'Sinistre 100%',             factor: 1.25, short: '×1,25' }
+    ];
+
+    let crmBaseValue = null;       // valeur saisie au départ
+    let crmCurrentValue = null;    // valeur courante après clics
+    let crmClicks = [];            // historique des clics (suite d'actions)
+
+    function toggleCrmTool(){
+      const wrap = document.getElementById('crmToolWrap');
+      const isOpen = wrap.style.display === 'block';
+      wrap.style.display = isOpen ? 'none' : 'block';
+      document.getElementById('btnCrmTool').textContent = isOpen ? 'Outil CRM' : 'Masquer outil CRM';
+      if (!isOpen) updateCrmToolUI();
+    }
+
+    function parseCrmInput(v){
+      const s = String(v || '').trim();
+      if (s === '') return null;
+      const n = Number(s.replace(',', '.'));
+      if (!Number.isFinite(n)) return null;
+      return n;
+    }
+
+    function trunc2(n){
+      return Math.floor(n * 100) / 100;
+    }
+
+    function format2FR(n){
+      return String(n.toFixed(2)).replace('.', ',');
+    }
+
+    function resetCrmToolState(){
+      crmBaseValue = null;
+      crmCurrentValue = null;
+      crmClicks = [];
+      updateCrmToolUI();
+    }
+
+    function getClicksSummary(){
+      if (!crmClicks.length) return '';
+      const counts = {};
+      crmClicks.forEach(a => { counts[a.key] = (counts[a.key] || 0) + 1; });
+
+      const parts = [];
+      CRM_ACTIONS.forEach(a => {
+        const c = counts[a.key] || 0;
+        if (c > 0) parts.push(`${c}× ${a.label} (${a.short})`);
+      });
+      return parts.join(' | ');
+    }
+
+    function updateCrmToolUI(){
+      const resultEl = document.getElementById('crmToolResult');
+      const trailEl = document.getElementById('crmToolTrail');
+      const inputVal = parseCrmInput(document.getElementById('crmToolInput').value);
+
+      if (inputVal === null){
+        resultEl.textContent = '';
+        trailEl.textContent = '';
+        return;
+      }
+
+      // Si l'utilisateur a tapé un CRM mais n'a pas encore cliqué, on l'affiche comme "base"
+      if (crmBaseValue === null){
+        crmBaseValue = inputVal;
+        crmCurrentValue = inputVal;
+      }
+
+      const baseTxt = `CRM départ : ${format2FR(trunc2(crmBaseValue))}`;
+      const curTxt  = `Résultat : ${format2FR(trunc2(crmCurrentValue))}`;
+
+      resultEl.textContent = `${curTxt}`;
+
+      const summary = getClicksSummary();
+      if (!summary){
+        trailEl.innerHTML = `<strong>${baseTxt}</strong>\nAucune action appliquée.`;
+      } else {
+        trailEl.innerHTML = `<strong>${baseTxt}</strong>\nActions : ${summary}`;
+      }
+    }
+
+    function applyCrmAction(action){
+      const input = document.getElementById('crmToolInput');
+      const inputVal = parseCrmInput(input.value);
+      if (inputVal === null) return;
+
+      // si c'est le 1er clic après saisie, on initialise sur la valeur saisie
+      if (crmBaseValue === null){
+        crmBaseValue = inputVal;
+        crmCurrentValue = inputVal;
+        crmClicks = [];
+      }
+
+      crmCurrentValue = trunc2(crmCurrentValue * action.factor);
+      crmClicks.push(action);
+      updateCrmToolUI();
     }
 
     const GLUE_DAYS = 1;
@@ -801,6 +970,14 @@
       document.getElementById('interruptionsAuto').textContent = '';
       document.getElementById('interruptionsMoto').textContent = '';
 
+      // reset outil CRM
+      document.getElementById('crmToolInput').value = '';
+      document.getElementById('crmToolResult').textContent = '';
+      document.getElementById('crmToolTrail').textContent = '';
+      crmBaseValue = null;
+      crmCurrentValue = null;
+      crmClicks = [];
+
       calculer(); calculIndep(); calculHamon();
     }
 
@@ -924,9 +1101,25 @@
       renderInterruptions('interruptionsMoto', []);
     }
 
+    /* ===== Listeners ===== */
     document.getElementById('btnClear').addEventListener('click', effacerTout);
-    document.getElementById('btnDark').addEventListener('click', toggleTheme);
+    document.getElementById('btnTheme').addEventListener('click', toggleTheme);
     document.getElementById('btnCrmTable').addEventListener('click', toggleCrmTable);
+    document.getElementById('btnCrmTool').addEventListener('click', toggleCrmTool);
+
+    // Reset outil CRM dès qu'on touche le champ (focus) [web:65]
+    document.getElementById('crmToolInput').addEventListener('focus', () => {
+      resetCrmToolState();
+    });
+    // (optionnel) si on tape, on met juste à jour l'affichage de base
+    document.getElementById('crmToolInput').addEventListener('input', () => {
+      resetCrmToolState();
+      updateCrmToolUI();
+    });
+
+    document.getElementById('btnCrmNone').addEventListener('click', () => applyCrmAction(CRM_ACTIONS[0]));
+    document.getElementById('btnCrm50').addEventListener('click', () => applyCrmAction(CRM_ACTIONS[1]));
+    document.getElementById('btnCrm100').addEventListener('click', () => applyCrmAction(CRM_ACTIONS[2]));
 
     document.querySelectorAll('input[type="text"], input[type="checkbox"], select').forEach(el => {
       el.addEventListener('input', calculer);
@@ -942,6 +1135,7 @@
       checkForUpdate();
       initCanvases();
       calculer(); calculIndep(); calculHamon();
+      updateCrmToolUI();
     });
   </script>
 </body>
