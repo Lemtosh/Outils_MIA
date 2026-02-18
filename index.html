@@ -1300,182 +1300,274 @@ body.dark #updateBanner button{ background: rgba(255,255,255,0.06); border-color
       return getComputedStyle(document.body).getPropertyValue(name).trim();
     }
 
-    function drawTimeline(canvasId, legendId, windowStart, windowEnd, mergedIntervals, label, crmMarkers) {
-      const canvas = document.getElementById(canvasId);
-      const ctx = canvas.getContext('2d');
 
-      const cssW = canvas.clientWidth || 420;
-      const ratio = window.devicePixelRatio || 1;
-      canvas.width = Math.floor(cssW * ratio);
-      canvas.height = Math.floor(136 * ratio);
-      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
-      const cssH = 136;
-      ctx.clearRect(0, 0, cssW, cssH);
+// --- Canvas helpers (color alpha + rounded rect path) ---
+function hexToRgb(hex){
+  if(!hex) return null;
+  let h = String(hex).trim();
+  if(h.startsWith('#')) h = h.slice(1);
+  if(h.length === 3) h = h.split('').map(ch => ch + ch).join('');
+  if(h.length !== 6) return null;
+  const r = parseInt(h.slice(0,2), 16);
+  const g = parseInt(h.slice(2,4), 16);
+  const b = parseInt(h.slice(4,6), 16);
+  if(!Number.isFinite(r) || !Number.isFinite(g) || !Number.isFinite(b)) return null;
+  return {r,g,b};
+}
 
-      const padL = 14, padR = 14;
-      const yLine = 68;
-      const lineW = cssW - padL - padR;
+function colorWithAlpha(color, alpha){
+  const c = String(color || '').trim();
+  if(!c) return `rgba(0,0,0,${alpha})`;
+  if(c.startsWith('rgba(')) return c;
+  if(c.startsWith('rgb(')){
+    const inside = c.slice(4, -1);
+    return `rgba(${inside},${alpha})`;
+  }
+  const rgb = hexToRgb(c);
+  if(rgb) return `rgba(${rgb.r},${rgb.g},${rgb.b},${alpha})`;
+  return c;
+}
 
-      const t0 = windowStart.getTime();
-      const t1 = windowEnd.getTime();
-      const span = Math.max(1, t1 - t0);
+function roundRectPath(ctx, x, y, w, h, r){
+  const radius = Math.max(0, Math.min(r, Math.min(w, h) / 2));
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + w, y, x + w, y + h, radius);
+  ctx.arcTo(x + w, y + h, x, y + h, radius);
+  ctx.arcTo(x, y + h, x, y, radius);
+  ctx.arcTo(x, y, x + w, y, radius);
+  ctx.closePath();
+}
+    function drawTimeline(canvasId, legendId, windowStart, windowEnd, mergedIntervals, label, crmMarkers){
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
 
-      function xOf(date) {
-        const t = date.getTime();
-        const p = (t - t0) / span;
-        return padL + Math.max(0, Math.min(1, p)) * lineW;
-      }
+  const cssW = canvas.clientWidth || 420;
+  const ratio = window.devicePixelRatio || 1;
+  canvas.width  = Math.floor(cssW * ratio);
+  canvas.height = Math.floor(136 * ratio);
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
-      ctx.strokeStyle = '#333';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(padL, yLine);
-      ctx.lineTo(padL + lineW, yLine);
-      ctx.stroke();
+  const cssH = 136;
+  ctx.clearRect(0, 0, cssW, cssH);
 
-      const isDark = document.body.classList.contains('dark');
-      const windowTextColor = isDark ? '#e8eaed' : '#111';
+  const padL = 14, padR = 14;
+  const yLine = 68;
+  const lineW = cssW - padL - padR;
 
-      ctx.fillStyle = windowTextColor;
-      ctx.font = '12px Arial';
-      ctx.textBaseline = 'alphabetic';
-      ctx.textAlign = 'left';
-      ctx.fillText(formatDateFR(windowStart), padL, 20);
-      ctx.textAlign = 'right';
-      ctx.fillText(formatDateFR(windowEnd), padL + lineW, 20);
+  const t0 = windowStart.getTime();
+  const t1 = windowEnd.getTime();
+  const span = Math.max(1, t1 - t0);
 
-      ctx.strokeStyle = getCssVar('--timelineRed');
-      ctx.lineWidth = 14;
-      ctx.lineCap = 'butt';
-      ctx.beginPath();
-      ctx.moveTo(padL, yLine);
-      ctx.lineTo(padL + lineW, yLine);
-      ctx.stroke();
+  function xOf(date){
+    const t = date.getTime();
+    const p = (t - t0) / span;
+    return padL + Math.max(0, Math.min(1, p)) * lineW;
+  }
 
-      ctx.strokeStyle = getCssVar('--timelineGreen');
-      ctx.lineWidth = 14;
-      ctx.lineCap = 'butt';
-      mergedIntervals.forEach(inter => {
-        const xs = xOf(inter.start);
-        const xe = xOf(inter.end);
-        if (xe <= xs) return;
-        ctx.beginPath();
-        ctx.moveTo(xs, yLine);
-        ctx.lineTo(xe, yLine);
-        ctx.stroke();
-      });
+  const isDark = document.body.classList.contains('dark');
 
-      // Bonus (mois au centre) : contour uniquement en dark
-      mergedIntervals.forEach(inter => {
-        const xs = xOf(inter.start);
-        const xe = xOf(inter.end);
-        if ((xe - xs) < 22) return;
+  const red = getCssVar('--timelineRed');
+  const green = getCssVar('--timelineGreen');
+  const marker = getCssVar('--markerBlue');
+  const softStroke = getCssVar('--softStroke') || (isDark ? 'rgba(255,255,255,0.16)' : 'rgba(17,24,39,0.12)');
 
-        const r = monthsAndRemainderDays(inter.start, inter.end);
-        const months = r.months + extraMonthsFromRemainderDays(r.remDays);
-        if (months <= 0) return;
+  // Track (window) as a rounded pill, using the same red code but softened.
+  const trackH = 18;
+  const trackY = yLine - trackH/2;
+  const trackX = padL;
+  const trackW = lineW;
+  const r = trackH/2;
 
-        const mid = (xs + xe) / 2;
-        const txt = String(months);
+  ctx.save();
+  ctx.fillStyle = colorWithAlpha(red, isDark ? 0.28 : 0.18);
+  roundRectPath(ctx, trackX, trackY, trackW, trackH, r);
+  ctx.fill();
 
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
+  // Subtle border like the rest of the UI.
+  ctx.strokeStyle = softStroke;
+  ctx.lineWidth = 1;
+  roundRectPath(ctx, trackX + 0.5, trackY + 0.5, trackW - 1, trackH - 1, r);
+  ctx.stroke();
+  ctx.restore();
 
-        const stroke = getCssVar('--bonusTextStrokeDark');
-        const fill = isDark ? getCssVar('--bonusTextDark') : getCssVar('--bonusText');
+  // Covered periods (mergedIntervals) as rounded segments with a light shadow.
+  mergedIntervals.forEach(inter => {
+    const xs = xOf(inter.start);
+    const xe = xOf(inter.end);
+    if(xe <= xs) return;
 
-        if (isDark) {
-          ctx.lineWidth = 3;
-          ctx.strokeStyle = stroke;
-          ctx.strokeText(txt, mid, yLine);
-        }
+    const segW = Math.max(2, xe - xs);
+    const segH = trackH;
+    const segY = trackY;
 
-        ctx.fillStyle = fill;
-        ctx.fillText(txt, mid, yLine);
-      });
+    ctx.save();
+    ctx.shadowColor = isDark ? 'rgba(0,0,0,0.55)' : 'rgba(17,24,39,0.18)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 2;
 
-      const placed = [];
+    const grad = ctx.createLinearGradient(xs, 0, xe, 0);
+    grad.addColorStop(0, colorWithAlpha(green, isDark ? 0.95 : 0.92));
+    grad.addColorStop(1, colorWithAlpha(green, isDark ? 0.80 : 0.86));
 
-      ctx.font = '12px Arial';
-      const topY = 20;
-      const padBlock = 6;
-      const txtStart = formatDateFR(windowStart);
-      const txtEnd = formatDateFR(windowEnd);
+    ctx.fillStyle = grad;
+    roundRectPath(ctx, xs, segY, segW, segH, r);
+    ctx.fill();
 
-      const wStart = ctx.measureText(txtStart).width;
-      placed.push({ x: padL - padBlock, y: topY - 12, w: wStart + 2*padBlock, h: 16 });
+    // Crisp edge
+    ctx.shadowColor = 'transparent';
+    ctx.strokeStyle = colorWithAlpha(green, isDark ? 0.55 : 0.45);
+    ctx.lineWidth = 1;
+    roundRectPath(ctx, xs + 0.5, segY + 0.5, segW - 1, segH - 1, r);
+    ctx.stroke();
 
-      const wEnd = ctx.measureText(txtEnd).width;
-      placed.push({ x: (padL + lineW) - wEnd - padBlock, y: topY - 12, w: wEnd + 2*padBlock, h: 16 });
+    ctx.restore();
+  });
 
-      const dateLevels = [
-        { y: yLine + 22, baseline: 'top' },
-        { y: yLine - 22, baseline: 'bottom' },
-        { y: yLine + 36, baseline: 'top' },
-        { y: yLine - 36, baseline: 'bottom' }
-      ];
+  // Bonus mois au centre (conservé)
+  mergedIntervals.forEach(inter => {
+    const xs = xOf(inter.start);
+    const xe = xOf(inter.end);
+    if(xe - xs < 22) return;
 
-      const dateLabels = [];
-      mergedIntervals.forEach(inter => {
-        dateLabels.push({ x: xOf(inter.start), text: formatDateFR(inter.start) });
-        dateLabels.push({ x: xOf(inter.end),   text: formatDateFR(inter.end) });
-      });
-      dateLabels.sort((a, b) => a.x - b.x);
+    const r0 = monthsAndRemainderDays(inter.start, inter.end);
+    const months = r0.months + extraMonthsFromRemainderDays(r0.remDays);
+    if(months <= 0) return;
 
-      dateLabels.forEach((lab, idx) => {
-        if (idx > 0) {
-          const prev = dateLabels[idx - 1];
-          if (lab.text === prev.text && Math.abs(lab.x - prev.x) < 2) return;
-        }
-        const preferredOrder = (idx % 2 === 0) ? [0,1,2,3] : [1,0,3,2];
+    const mid = (xs + xe) / 2;
+    const txt = String(months);
 
-        const res = placeTextAvoiding(ctx, lab.text, lab.x, dateLevels, placed, cssW, {
-          font: '11px Arial', color: getCssVar('--timelineGreen'), preferredOrder, pad: 3, h: 12
-        });
+    ctx.save();
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
 
-        if (!res.placed) return;
+    const stroke = getCssVar('--bonusTextStrokeDark');
+    const fill = isDark ? getCssVar('--bonusTextDark') : getCssVar('--bonusText');
 
-        ctx.strokeStyle = getCssVar('--timelineGreen');
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(lab.x, yLine - 18);
-        ctx.lineTo(lab.x, yLine + 18);
-        ctx.stroke();
-      });
+    if(isDark){
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = stroke;
+      ctx.strokeText(txt, mid, yLine);
+    }
+    ctx.fillStyle = fill;
+    ctx.fillText(txt, mid, yLine);
+    ctx.restore();
+  });
 
-      const crmLevels = [
-        { y: yLine - 44, baseline: 'bottom' },
-        { y: yLine + 44, baseline: 'top' },
-        { y: yLine - 58, baseline: 'bottom' },
-        { y: yLine + 58, baseline: 'top' }
-      ];
+  // Labels positioning helpers (keep collision-avoid logic)
+  const placed = [];
 
-      if (Array.isArray(crmMarkers) && crmMarkers.length > 0) {
-        crmMarkers.forEach((m, idx) => {
-          const x = xOf(m.at);
+  // Window start/end labels
+  ctx.save();
+  ctx.font = '12px Arial';
+  const topY = 20;
+  const padBlock = 6;
+  const txtStart = formatDateFR(windowStart);
+  const txtEnd = formatDateFR(windowEnd);
+  const wStart = ctx.measureText(txtStart).width;
+  const wEnd = ctx.measureText(txtEnd).width;
+  placed.push({x: padL - padBlock, y: topY - 12, w: wStart + 2*padBlock, h: 16});
+  placed.push({x: padL + lineW - wEnd - padBlock, y: topY - 12, w: wEnd + 2*padBlock, h: 16});
 
-          ctx.strokeStyle = getCssVar('--markerBlue');
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(x, yLine - 20);
-          ctx.lineTo(x, yLine - 4);
-          ctx.stroke();
+  const windowTextColor = isDark ? '#e8eaed' : '#111';
+  ctx.fillStyle = windowTextColor;
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = 'left';
+  ctx.fillText(txtStart, padL, topY);
+  ctx.textAlign = 'right';
+  ctx.fillText(txtEnd, padL + lineW, topY);
+  ctx.restore();
 
-          const preferredOrder = (idx % 2 === 0) ? [0,1,2,3] : [1,0,3,2];
+  // Date labels
+  const dateLevels = [
+    {y: yLine + 22, baseline: 'top'},
+    {y: yLine - 22, baseline: 'bottom'},
+    {y: yLine + 36, baseline: 'top'},
+    {y: yLine - 36, baseline: 'bottom'}
+  ];
 
-          placeTextAvoiding(ctx, String(m.crm), x, crmLevels, placed, cssW, {
-            font: '12px Arial', color: getCssVar('--markerBlue'), preferredOrder, pad: 3, h: 12
-          });
-        });
-      }
+  const dateLabels = [];
+  mergedIntervals.forEach(inter => {
+    dateLabels.push({x: xOf(inter.start), text: formatDateFR(inter.start)});
+    dateLabels.push({x: xOf(inter.end), text: formatDateFR(inter.end)});
+  });
+  dateLabels.sort((a,b) => a.x - b.x);
 
-      document.getElementById(legendId).textContent =
-        `${label} : ${formatDateFR(windowStart)} → ${formatDateFR(windowEnd)}`;
+  ctx.save();
+  dateLabels.forEach((lab, idx) => {
+    if(idx > 0){
+      const prev = dateLabels[idx - 1];
+      if(lab.text === prev.text && Math.abs(lab.x - prev.x) < 2) return;
     }
 
-    function effacerTout() {
+    const preferredOrder = (idx % 2 === 0) ? [0,1,2,3] : [1,0,3,2];
+    const res = placeTextAvoiding(ctx, lab.text, lab.x, dateLevels, placed, cssW, {
+      font: '11px Arial',
+      color: colorWithAlpha(green, isDark ? 0.70 : 0.78),
+      preferredOrder,
+      pad: 3,
+      h: 12
+    });
+    if(!res.placed) return;
+
+    ctx.save();
+    ctx.strokeStyle = colorWithAlpha(green, isDark ? 0.55 : 0.55);
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(lab.x, yLine - trackH/2 - 2);
+    ctx.lineTo(lab.x, yLine + trackH/2 + 2);
+    ctx.stroke();
+    ctx.restore();
+  });
+  ctx.restore();
+
+  // CRM markers
+  const crmLevels = [
+    {y: yLine - 44, baseline: 'bottom'},
+    {y: yLine + 44, baseline: 'top'},
+    {y: yLine - 58, baseline: 'bottom'},
+    {y: yLine + 58, baseline: 'top'}
+  ];
+
+  if(Array.isArray(crmMarkers) && crmMarkers.length){
+    ctx.save();
+    crmMarkers.forEach((m, idx) => {
+      const x = xOf(m.at);
+      const pinTop = yLine - trackH/2 - 18;
+      const pinBottom = yLine - trackH/2 - 2;
+
+      ctx.strokeStyle = colorWithAlpha(marker, isDark ? 0.85 : 0.85);
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x, pinTop);
+      ctx.lineTo(x, pinBottom);
+      ctx.stroke();
+
+      ctx.fillStyle = marker;
+      ctx.beginPath();
+      ctx.arc(x, pinTop, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      const preferredOrder = (idx % 2 === 0) ? [0,1,2,3] : [1,0,3,2];
+      placeTextAvoiding(ctx, String(m.crm), x, crmLevels, placed, cssW, {
+        font: '12px Arial',
+        color: marker,
+        preferredOrder,
+        pad: 3,
+        h: 12
+      });
+    });
+    ctx.restore();
+  }
+
+  document.getElementById(legendId).textContent = `${label} (${formatDateFR(windowStart)} → ${formatDateFR(windowEnd)})`;
+}
+
+function effacerTout() {
       document.getElementById('dateEffet').value = '';
       document.getElementById('moto').checked = false;
 
