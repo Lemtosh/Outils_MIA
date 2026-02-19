@@ -787,6 +787,30 @@ body.dark .motoToolBtn.toolBtnActive{
   width:110px;
 }
 
+
+
+/* --- Date d'effet: make label match other labels (size + color) --- */
+.dateEffetBubble label[for="dateEffet"]{
+  font-family:inherit !important;
+  font-size:12px !important;
+  font-weight:600 !important;
+  color:color-mixin(in oklab, var(--text) 75%, transparent) !important;
+}
+
+
+
+/* --- Background: prevent repeating/tiling when viewport is small --- */
+body{
+  background-repeat:no-repeat;
+  background-size:cover;
+  background-attachment:fixed;
+}
+body.dark{
+  background-repeat:no-repeat;
+  background-size:cover;
+  background-attachment:fixed;
+}
+
 </style>
 </head>
 <body>
@@ -1039,6 +1063,9 @@ body.dark .motoToolBtn.toolBtnActive{
 <div class="muted" id="legendAuto" style="margin:6px 0 6px 0;"></div>
 <canvas height="136" id="canvasAuto" width="420"></canvas>
 <div class="interruptions" id="interruptionsAuto"></div>
+<div class="row" style="margin-top:10px; justify-content:flex-start;">
+  <button class="pillBtn" id="btnRiCommentAuto" disabled type="button" title="Copier un commentaire RI basé sur les interruptions Auto" onclick="copyRiCommentAuto();">Commentaire automatique RI</button>
+</div>
 </div><div class="card" id="cardMoto" style="display:none;">
 <h2>Frise MOTO</h2>
 <div class="muted" id="legendMoto" style="margin:6px 0 6px 0;"></div>
@@ -1060,7 +1087,7 @@ body.dark .motoToolBtn.toolBtnActive{
 </div>
 <div aria-live="polite" class="tooltip" id="crmTooltip" role="dialog"></div>
 <script>
-    const LOCAL_VERSION = "0.27";
+    const LOCAL_VERSION = "0.28";
     const VERSION_URL = "https://gist.githubusercontent.com/Lemtosh/ac7fc859fe26f28a17f86fa73c4a4e95/raw/version.json";
 
     function cmpVersion(a, b) {
@@ -1992,7 +2019,11 @@ ${formatDateFR(deb)} → ${formatDateFR(fin)}`;
       if (motoChecked) drawTimeline('canvasMoto', 'legendMoto', win.start, win.end, mergedMoto, `MOTO (${refMonths} mois)`, buildCrmMarkers(lineIntervalsMoto));
       else clearCanvas('canvasMoto', 'legendMoto', '');
 
-      renderInterruptions('interruptionsAuto', computeGapsWithinWindow(win.start, win.end, mergedAuto));
+      const _gapsAuto = computeGapsWithinWindow(win.start, win.end, mergedAuto);
+  LAST_GAPS_AUTO = _gapsAuto;
+  renderInterruptions('interruptionsAuto', _gapsAuto);
+  const _riBtn = document.getElementById('btnRiCommentAuto');
+  if(_riBtn){ _riBtn.disabled = !win; };
       if (motoChecked) renderInterruptions('interruptionsMoto', computeGapsWithinWindow(win.start, win.end, mergedMoto));
       else document.getElementById('interruptionsMoto').textContent = '';
 
@@ -2046,7 +2077,9 @@ ${formatDateFR(deb)} → ${formatDateFR(fin)}`;
     document.getElementById('btnCrmTool').addEventListener('click', toggleCrmTool);
     document.getElementById('btnCrmPermit').addEventListener('click', toggleCrmPermit);
     document.getElementById('btnClear').addEventListener('click', effacerTout);
-    document.getElementById('btnMeta').addEventListener('click', toggleMeta);
+    document.getElementById('btnMeta').addEventListener('click', toggleMeta)
+  const _ri = document.getElementById('btnRiCommentAuto');
+  if(_ri){ _ri.addEventListener('click', (e)=>{ e.preventDefault(); copyRiCommentAuto(); }); };
 
     document.getElementById('crmToolInput').addEventListener('focus', () => resetCrmToolState());
     document.getElementById('crmToolInput').addEventListener('input', () => { resetCrmToolState(); updateCrmToolUI(); });
@@ -2060,7 +2093,7 @@ ${formatDateFR(deb)} → ${formatDateFR(fin)}`;
     document.getElementById('crmInfoBtn').addEventListener('click', (e) => {
       const msg =
         `<strong>Indicatif frise</strong><br>` +
-        `<em>Champ indicatif : sert uniquement à afficher un repère (CRM) sur la frise.</em>`;
+        `<em>Champ indicatif : sert uniquement à afficher un repère (ex: CRM) sur la frise.</em>`;
       showTooltipAt(e.clientX, e.clientY, msg);
     });
 
@@ -2425,6 +2458,64 @@ function copyNotesToClipboard(){
   }else{
     fallback();
   }
+}
+
+
+
+// --- RI auto comment (based on Auto gaps) ---
+let LAST_GAPS_AUTO = null;
+
+function buildRiCommentFromGaps(gaps){
+  if(!Array.isArray(gaps) || gaps.length===0){
+    return "Aucune période manquante détectée sur la frise Auto.";
+  }
+  const parts = gaps.map(g => `du ${formatDateFR(g.start)} au ${formatDateFR(g.end)}`);
+  if(parts.length===1){
+    return `Indexer le ou les relevé(s) d'informations pour la période ${parts[0]}.`;
+  }
+  const first = parts[0];
+  const rest = parts.slice(1).map(p => `ainsi que la période ${p}`);
+  return `Indexer le ou les relevé(s) d'informations pour la période ${first}, ${rest.join(', ')}.`;
+}
+
+function copyTextToClipboard(text, btn){
+  const feedback = (ok) => {
+    if(!btn) return;
+    const old = btn.title;
+    btn.title = ok ? 'Copié !' : 'Copie impossible';
+    setTimeout(()=>{ btn.title = old; }, 900);
+  };
+
+  const fallback = () => {
+    try{
+      const tmp = document.createElement('textarea');
+      tmp.value = String(text ?? '');
+      tmp.setAttribute('readonly','');
+      tmp.style.position = 'fixed';
+      tmp.style.top = '-1000px';
+      tmp.style.left = '-1000px';
+      document.body.appendChild(tmp);
+      tmp.select();
+      tmp.setSelectionRange(0, tmp.value.length);
+      const ok = document.execCommand && document.execCommand('copy');
+      document.body.removeChild(tmp);
+      feedback(!!ok);
+    }catch(e){
+      feedback(false);
+    }
+  };
+
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(String(text ?? '')).then(()=>feedback(true)).catch(()=>fallback());
+  }else{
+    fallback();
+  }
+}
+
+function copyRiCommentAuto(){
+  const btn = document.getElementById('btnRiCommentAuto');
+  const text = buildRiCommentFromGaps(LAST_GAPS_AUTO);
+  copyTextToClipboard(text, btn);
 }
 
 </script>
