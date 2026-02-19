@@ -635,10 +635,7 @@ body.dark .motoToolBtn.toolBtnActive{
 #totalMois, #interruptionTxt{ margin-top: 4px; }
 .notesBox{ margin-top: 6px; }
 
-@media (max-width: 1100px){
-  .tableFriseRow{ flex-direction:column; }
-  .friseCol{ flex:1 1 auto; width:100%; }
-}
+/* responsive frise rule removed – frise reste à droite sur desktop */
 
 /* Indep + Hamon buttons: side-by-side */
 .sectionToggleRow{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top: 4px; }
@@ -900,6 +897,9 @@ body.dark{
 <button class="pillBtn" id="btnCrmTable" title="Afficher/Masquer le tableau CRM" type="button">Tableau CRM</button>
 <button class="pillBtn" id="btnCrmTool" title="Afficher/Masquer l’outil de calcul CRM" type="button">Impact CRM</button>
 <button class="pillBtn" id="btnCrmPermit" title="Afficher/Masquer l’outil CRM max via date de permis" type="button">CRM max (permis)</button>
+        <button class="pillBtn sectionToggleBtn" id="btnToggleIndep" type="button">Période précise</button>
+        <button class="pillBtn sectionToggleBtn" id="btnToggleHamon" type="button">Hamon</button>
+
 </div>
 </div>
 <button aria-label="Basculer le thème" class="themeFab" id="btnTheme" title="Basculer le thème" type="button">
@@ -955,6 +955,28 @@ body.dark{
 </div>
 <div class="muted" id="permitCrmDetail" style="margin-top:6px;"></div>
 </div>
+
+<div class="card cardSmall" id="indepCard" style="display:none;">
+<h2>Calcul indépendant d'une période</h2>
+<div class="row" style="margin-top:6px;">
+<label for="debIndep">Début :</label>
+<input id="debIndep" maxlength="10" type="text"/>
+<label for="finIndep">Fin :</label>
+<input id="finIndep" maxlength="10" type="text"/>
+</div>
+<div class="result" id="resultIndep" style="margin-top:8px;"></div>
+<div class="muted">Résultat en années / mois / jours (calcul calendaire).</div>
+</div>
+<div class="card cardSmall" id="hamonCard" style="display:none;">
+<h2>Hamon (Mieux Assuré)</h2>
+<div class="row" style="margin-top:6px;">
+<label for="dateEnvoiHamon">Envoi :</label>
+<input id="dateEnvoiHamon" maxlength="10" type="text"/>
+</div>
+<div class="result" id="resultHamon" style="margin-top:8px;"></div>
+<div class="muted">Effet = envoi + 33 jours.</div>
+</div>
+
 <div class="row">
 <span class="dateEffetBubble"><label for="dateEffet">Date d'effet :</label>
 <input id="dateEffet" maxlength="10" type="text"/>
@@ -1118,37 +1140,23 @@ body.dark{
     
   </div>
 <textarea id="notes" placeholder="Notes / observations..."></textarea>
-</div><div class="error" id="errors"></div><div class="sectionToggleRow"><button class="pillBtn sectionToggleBtn" id="btnToggleIndep" type="button">Période précise</button><button class="pillBtn sectionToggleBtn" id="btnToggleHamon" type="button">Hamon</button></div><div class="card cardSmall" id="indepCard" style="display:none;">
-<h2>Calcul indépendant d'une période</h2>
-<div class="row" style="margin-top:6px;">
-<label for="debIndep">Début :</label>
-<input id="debIndep" maxlength="10" type="text"/>
-<label for="finIndep">Fin :</label>
-<input id="finIndep" maxlength="10" type="text"/>
-</div>
-<div class="result" id="resultIndep" style="margin-top:8px;"></div>
-<div class="muted">Résultat en années / mois / jours (calcul calendaire).</div>
-</div><div class="card cardSmall" id="hamonCard" style="display:none;">
-<h2>Hamon (Mieux Assuré)</h2>
-<div class="row" style="margin-top:6px;">
-<label for="dateEnvoiHamon">Envoi :</label>
-<input id="dateEnvoiHamon" maxlength="10" type="text"/>
-</div>
-<div class="result" id="resultHamon" style="margin-top:8px;"></div>
-<div class="muted">Effet = envoi + 33 jours.</div>
-</div></div><div class="friseCol"><div class="card" id="cardAuto">
+</div><div class="error" id="errors"></div>
+</div><div class="friseCol"><div class="card" id="cardAuto">
 <h2>Frise AUTO</h2>
 <div class="muted" id="legendAuto" style="margin:6px 0 6px 0;"></div>
 <canvas height="136" id="canvasAuto" width="420"></canvas>
 <div class="interruptions" id="interruptionsAuto"></div>
 <div class="row" style="margin-top:10px; justify-content:flex-start;">
-  <button class="pillBtn" id="btnRiCommentAuto" disabled type="button" title="Copier un commentaire RI basé sur les interruptions Auto">Commentaire automatique RI</button>
+  <button class="pillBtn" id="btnRiCommentAuto" disabled type="button" title="Copier un commentaire RI basé sur les interruptions Auto">Commentaire automatique interruption(s)</button>
 </div>
 </div><div class="card" id="cardMoto" style="display:none;">
 <h2>Frise MOTO</h2>
 <div class="muted" id="legendMoto" style="margin:6px 0 6px 0;"></div>
 <canvas height="136" id="canvasMoto" width="420"></canvas>
 <div class="interruptions" id="interruptionsMoto"></div>
+<div class="row" style="margin-top:10px; justify-content:flex-start;">
+  <button class="pillBtn" id="btnRiCommentMoto" disabled type="button" title="Copier un commentaire RI basé sur les interruptions Moto">Commentaire automatique interruption(s)</button>
+</div>
 </div></div></div><div class="metaWrap">
 <button aria-expanded="false" class="metaBtn" id="btnMeta" type="button">Infos auteur / version</button>
 </div>
@@ -1165,7 +1173,7 @@ body.dark{
 </div>
 <div aria-live="polite" class="tooltip" id="crmTooltip" role="dialog"></div>
 <script>
-    const LOCAL_VERSION = "0.29";
+    const LOCAL_VERSION = "0.30";
     const VERSION_URL = "https://gist.githubusercontent.com/Lemtosh/ac7fc859fe26f28a17f86fa73c4a4e95/raw/version.json";
 
     function cmpVersion(a, b) {
@@ -1279,21 +1287,35 @@ body.dark{
     }
     function closeAllCrmPanels(except){ // except: 'table' | 'tool' | 'permit' | null
       if (except !== 'table') {
-        setWrapOpen('crmTableWrap','btnCrmTable',false,'Tableau CRM','Masquer tableau CRM');
+        setWrapOpen('crmTableWrap','btnCrmTable',false,'Tableau CRM','Tableau CRM');
       }
       if (except !== 'tool') {
-        setWrapOpen('crmToolWrap','btnCrmTool',false,'Impact CRM','Masquer Impact CRM');
+        setWrapOpen('crmToolWrap','btnCrmTool',false,'Impact CRM','Impact CRM');
       }
       if (except !== 'permit') {
-        setWrapOpen('crmPermitWrap','btnCrmPermit',false,'CRM max (permis)','Masquer CRM max (permis)');
+        setWrapOpen('crmPermitWrap','btnCrmPermit',false,'CRM max (permis)','CRM max (permis)');
       }
     }
+
+    function closeAllTools(exceptKey){
+      // exceptKey : 'crmTable' | 'crmTool' | 'crmPermit' | 'indep' | 'hamon' | null
+      const crmExcept =
+        exceptKey === 'crmTable'  ? 'table'  :
+        exceptKey === 'crmTool'   ? 'tool'   :
+        exceptKey === 'crmPermit' ? 'permit' :
+        null;
+      closeAllCrmPanels(crmExcept);
+      if (exceptKey !== 'indep') setPanelOpen('indepCard','btnToggleIndep', false);
+      if (exceptKey !== 'hamon') setPanelOpen('hamonCard','btnToggleHamon', false);
+    }
+
 
     function toggleCrmTable(){
       const wrap = document.getElementById('crmTableWrap');
       const isOpen = wrap.style.display === 'block';
-      if (!isOpen) closeAllCrmPanels('table');
-      setWrapOpen('crmTableWrap','btnCrmTable',!isOpen,'Tableau CRM','Masquer tableau CRM', renderCrmTable);
+      const willOpen = !isOpen;
+      if (willOpen) closeAllTools('crmTable');
+      setWrapOpen('crmTableWrap','btnCrmTable',willOpen,'Tableau CRM','Tableau CRM', renderCrmTable);
     }
 
     /* ===== Impact CRM (sinistres) ===== */
@@ -1312,8 +1334,9 @@ body.dark{
     function toggleCrmTool(){
       const wrap = document.getElementById('crmToolWrap');
       const isOpen = wrap.style.display === 'block';
-      if (!isOpen) closeAllCrmPanels('tool');
-      setWrapOpen('crmToolWrap','btnCrmTool',!isOpen,'Impact CRM','Masquer Impact CRM', updateCrmToolUI);
+      const willOpen = !isOpen;
+      if (willOpen) closeAllTools('crmTool');
+      setWrapOpen('crmToolWrap','btnCrmTool',willOpen,'Impact CRM','Impact CRM', updateCrmToolUI);
     }
 
     function parseCrmInput(v){
@@ -1387,8 +1410,9 @@ body.dark{
     function toggleCrmPermit(){
       const wrap = document.getElementById('crmPermitWrap');
       const isOpen = wrap.style.display === 'block';
-      if (!isOpen) closeAllCrmPanels('permit');
-      setWrapOpen('crmPermitWrap','btnCrmPermit',!isOpen,'CRM max (permis)','Masquer CRM max (permis)', updatePermitCrm);
+      const willOpen = !isOpen;
+      if (willOpen) closeAllTools('crmPermit');
+      setWrapOpen('crmPermitWrap','btnCrmPermit',willOpen,'CRM max (permis)','CRM max (permis)', updatePermitCrm);
     }
 
     function parseDateFlexible(str) {
@@ -2102,17 +2126,27 @@ ${formatDateFR(deb)} → ${formatDateFR(fin)}`;
   renderInterruptions('interruptionsAuto', _gapsAuto);
   const _riBtn = document.getElementById('btnRiCommentAuto');
   if(_riBtn){ _riBtn.disabled = !win; };
-      if (motoChecked) renderInterruptions('interruptionsMoto', computeGapsWithinWindow(win.start, win.end, mergedMoto));
-      else document.getElementById('interruptionsMoto').textContent = '';
+      if (motoChecked) {
+    const _gapsMoto = computeGapsWithinWindow(win.start, win.end, mergedMoto);
+    LAST_GAPS_MOTO = _gapsMoto;
+    renderInterruptions('interruptionsMoto', _gapsMoto);
+    const _riBtnMoto = document.getElementById('btnRiCommentMoto');
+    if(_riBtnMoto){ _riBtnMoto.disabled = false; }
+  } else {
+    LAST_GAPS_MOTO = null;
+    document.getElementById('interruptionsMoto').textContent = '';
+    const _riBtnMoto = document.getElementById('btnRiCommentMoto');
+    if(_riBtnMoto){ _riBtnMoto.disabled = true; }
+  }
 
       const interAuto = Math.max(0, refMonths - autoAgg.total);
       if (motoChecked) {
         const interMoto = Math.max(0, refMonths - motoAgg.total);
         totalEl.textContent = `Antécédents : Auto = ${autoAgg.total} mois ; Moto = ${motoAgg.total} mois.`;
-        interrupEl.textContent = `Interruption estimée : Auto = ${interAuto} mois ; Moto = ${interMoto} mois.`;
+        interrupEl.textContent = `Interruption : Auto = ${interAuto} mois ; Moto = ${interMoto} mois.`;
       } else {
         totalEl.textContent = `Antécédents : Auto = ${autoAgg.total} mois.`;
-        interrupEl.textContent = `Interruption estimée : ${interAuto} mois (${refMonths} - ${autoAgg.total}).`;
+        interrupEl.textContent = `Interruption : ${interAuto} mois.`;
       }
     }
 
@@ -2158,6 +2192,8 @@ ${formatDateFR(deb)} → ${formatDateFR(fin)}`;
     document.getElementById('btnMeta').addEventListener('click', toggleMeta)
   const _ri = document.getElementById('btnRiCommentAuto');
   if(_ri){ _ri.addEventListener('click', (e)=>{ e.preventDefault(); copyRiCommentAuto(); }); };
+  const _riMoto = document.getElementById('btnRiCommentMoto');
+  if(_riMoto){ _riMoto.addEventListener('click', (e)=>{ e.preventDefault(); copyRiCommentMoto(); }); };
 
     document.getElementById('crmToolInput').addEventListener('focus', () => resetCrmToolState());
     document.getElementById('crmToolInput').addEventListener('input', () => { resetCrmToolState(); updateCrmToolUI(); });
@@ -2296,155 +2332,29 @@ function setPanelOpen(cardId, btnId, isOpen){
 function toggleExclusive(btnId, cardId, otherBtnId, otherCardId){
   const card = document.getElementById(cardId);
   if(!card) return;
-
   const isOpen = (card.style.display === 'block');
   const willOpen = !isOpen;
-
-  // Si on ouvre, on ferme l'autre.
-  if(willOpen) setPanelOpen(otherCardId, otherBtnId, false);
-
+  if(willOpen){
+    const key = btnId === 'btnToggleIndep' ? 'indep' : btnId === 'btnToggleHamon' ? 'hamon' : null;
+    closeAllTools(key);
+  }
   setPanelOpen(cardId, btnId, willOpen);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   const b1 = document.getElementById('btnToggleIndep');
-  if(b1) b1.addEventListener('click', () => toggleExclusive('btnToggleIndep','indepCard','btnToggleHamon','hamonCard'));
+  if(b1) b1.addEventListener('click', () => {
+    toggleExclusive('btnToggleIndep','indepCard','btnToggleHamon','hamonCard');
+    if(document.getElementById('indepCard').style.display === 'block' && typeof calculIndep === 'function') calculIndep();
+  });
 
   const b2 = document.getElementById('btnToggleHamon');
-  if(b2) b2.addEventListener('click', () => toggleExclusive('btnToggleHamon','hamonCard','btnToggleIndep','indepCard'));
+  if(b2) b2.addEventListener('click', () => {
+    toggleExclusive('btnToggleHamon','hamonCard','btnToggleIndep','indepCard');
+    if(document.getElementById('hamonCard').style.display === 'block' && typeof calculHamon === 'function') calculHamon();
+  });
 });
 
-// --- Autosave / restore form fields (prevents loss on refresh) ---
-const AUTOSAVE_KEY = 'outilValidation_autosave_v024';
-
-function getFieldValue(el){
-  const tag = (el.tagName || '').toLowerCase();
-  const type = (el.getAttribute('type') || '').toLowerCase();
-  if(tag === 'input' && (type === 'checkbox' || type === 'radio')) return !!el.checked;
-  return String(el.value ?? '');
-}
-
-function setFieldValue(el, val){
-  const tag = (el.tagName || '').toLowerCase();
-  const type = (el.getAttribute('type') || '').toLowerCase();
-  if(tag === 'input' && (type === 'checkbox' || type === 'radio')){
-    el.checked = !!val;
-  }else{
-    el.value = (val ?? '');
-  }
-}
-
-function listSavableFields(){
-  // Only elements with an id (stable key)
-  const selectors = [
-    'input[id]',
-    'select[id]',
-    'textarea[id]'
-  ].join(',');
-  const all = Array.from(document.querySelectorAll(selectors));
-  // Exclude buttons and hidden helper fields if ever present
-  return all.filter(el => {
-    const tag = (el.tagName||'').toLowerCase();
-    if(tag === 'input'){
-      const t = (el.getAttribute('type')||'text').toLowerCase();
-      if(t === 'button' || t === 'submit' || t === 'reset') return false;
-    }
-    return true;
-  });
-}
-
-function buildSavePayload(){
-  const payload = { ts: Date.now(), fields: {} };
-  listSavableFields().forEach(el => {
-    const id = el.id;
-    if(!id) return;
-    payload.fields[id] = { v: getFieldValue(el) };
-  });
-
-  // Save a few UI states that matter for user (optional)
-  const indep = document.getElementById('indepCard');
-  const hamon = document.getElementById('hamonCard');
-  if(indep) payload.fields.__indepOpen = { v: (indep.style.display === 'block') };
-  if(hamon) payload.fields.__hamonOpen = { v: (hamon.style.display === 'block') };
-
-  return payload;
-}
-
-function saveAllFields(){
-  try{
-    const payload = buildSavePayload();
-    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
-  }catch(e){
-    // Storage may be blocked; ignore
-  }
-}
-
-function restoreAllFields(){
-  let raw = null;
-  try{ raw = localStorage.getItem(AUTOSAVE_KEY); }catch(e){ return; }
-  if(!raw) return;
-
-  let payload = null;
-  try{ payload = JSON.parse(raw); }catch(e){ return; }
-  if(!payload || !payload.fields) return;
-
-  // Restore regular fields
-  Object.keys(payload.fields).forEach(id => {
-    if(id.startsWith('__')) return;
-    const el = document.getElementById(id);
-    if(!el) return;
-    setFieldValue(el, payload.fields[id].v);
-    // Trigger existing logic (calculs, UI)
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-  });
-
-  // Restore collapsible states if present
-  const indep = document.getElementById('indepCard');
-  const hamon = document.getElementById('hamonCard');
-  if(indep && payload.fields.__indepOpen) indep.style.display = payload.fields.__indepOpen.v ? 'block' : 'none';
-  if(hamon && payload.fields.__hamonOpen) hamon.style.display = payload.fields.__hamonOpen.v ? 'block' : 'none';
-
-  // Sync button states if your toggle logic uses classes
-  const bIndep = document.getElementById('btnToggleIndep');
-  if(bIndep && indep) bIndep.classList.toggle('toolBtnActive', indep.style.display === 'block');
-  const bHamon = document.getElementById('btnToggleHamon');
-  if(bHamon && hamon) bHamon.classList.toggle('toolBtnActive', hamon.style.display === 'block');
-
-  // Moto UI sync if function exists
-  if(typeof syncMotoBtn === 'function') syncMotoBtn();
-}
-
-function installAutosave(){
-  let t = null;
-  const schedule = () => {
-    clearTimeout(t);
-    t = setTimeout(saveAllFields, 250);
-  };
-  listSavableFields().forEach(el => {
-    el.addEventListener('input', schedule);
-    el.addEventListener('change', schedule);
-  });
-
-  // If user clicks Effacer, also clear autosave
-  const clearBtn = document.getElementById('btnClear');
-  if(clearBtn){
-    clearBtn.addEventListener('click', () => {
-      try{ localStorage.removeItem(AUTOSAVE_KEY); }catch(e){}
-    });
-  }
-}
-
-// --- Update UX: in-page refresh when a new version is available ---
-function reloadWithBust(versionTag){
-  // Works when served over http(s). For file://, reloading won't fetch a newer HTML.
-  if(!(location.protocol === 'http:' || location.protocol === 'https:')) return;
-  saveAllFields();
-  const url = new URL(window.location.href);
-  if(versionTag) url.searchParams.set('v', String(versionTag));
-  url.searchParams.set('ts', String(Date.now()));
-  window.location.replace(url.toString());
-}
 
 function wireUpdateNow(remoteVersion){
   const btn = document.getElementById('btnUpdateNow');
@@ -2542,18 +2452,22 @@ function copyNotesToClipboard(){
 
 // --- RI auto comment (based on Auto gaps) ---
 let LAST_GAPS_AUTO = null;
+let LAST_GAPS_MOTO = null;
 
-function buildRiCommentFromGaps(gaps){
+function buildRiCommentFromGaps(gaps, vehicleType){
+  // vehicleType: 'AUTO' | 'MOTO' | null (null = sans mention véhicule)
+  const vtLabel = vehicleType ? ` ${vehicleType.toUpperCase()}` : '';
+  const vtFrise = vehicleType ? vehicleType.toUpperCase() : 'Auto';
   if(!Array.isArray(gaps) || gaps.length===0){
-    return "Aucune période manquante détectée sur la frise Auto.";
+    return `Aucune interruption détectée sur la frise ${vtFrise}.`;
   }
   const parts = gaps.map(g => `du ${formatDateFR(g.start)} au ${formatDateFR(g.end)}`);
   if(parts.length===1){
-    return `Indexer le ou les relevé(s) d'informations pour la période ${parts[0]}.`;
+    return `Indexer le ou les relevé(s) d'informations${vtLabel} pour la période ${parts[0]}.`;
   }
   const first = parts[0];
   const rest = parts.slice(1).map(p => `ainsi que la période ${p}`);
-  return `Indexer le ou les relevé(s) d'informations pour la période ${first}, ${rest.join(', ')}.`;
+  return `Indexer le ou les relevé(s) d'informations${vtLabel} pour la période ${first}, ${rest.join(', ')}.`;
 }
 
 function copyTextToClipboard(text, btn){
@@ -2662,7 +2576,15 @@ document.addEventListener('DOMContentLoaded', initRiPopupBehaviors);
 
 function copyRiCommentAuto(){
   const btn = document.getElementById('btnRiCommentAuto');
-  const text = buildRiCommentFromGaps(LAST_GAPS_AUTO);
+  const motoOn = !!(document.getElementById('moto') && document.getElementById('moto').checked);
+  const text = buildRiCommentFromGaps(LAST_GAPS_AUTO, motoOn ? 'AUTO' : null);
+  copyTextToClipboard(text, btn);
+  showRiPopup('Commentaire prêt à être collé', 2800);
+}
+
+function copyRiCommentMoto(){
+  const btn = document.getElementById('btnRiCommentMoto');
+  const text = buildRiCommentFromGaps(LAST_GAPS_MOTO, 'MOTO');
   copyTextToClipboard(text, btn);
   showRiPopup('Commentaire prêt à être collé', 2800);
 }
