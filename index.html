@@ -253,7 +253,7 @@
       #themeIcon{ font-size: 14px; }
     }
 
-    /* Info-bulle CRM résiliation */
+    /* Info-bulle Indicatif frise */
     .thInfoWrap{ display:inline-flex; align-items:center; justify-content:center; gap:6px; }
     .infoBtn{
       width: 18px; height: 18px; min-width: 18px; min-height: 18px;
@@ -710,6 +710,83 @@ body.dark .motoToolBtn.toolBtnActive{
   filter: brightness(1.03) !important;
   transform: none !important;
 }
+
+
+/* --- Notes copy button fixes --- */
+.notesBox .notesHeader{display:flex !important;flex-direction:row !important;align-items:center !important;justify-content:flex-start !important;gap:8px !important;}
+.notesBox .notesHeader h2{margin:0 !important;line-height:1 !important;}
+.notesBox .copyIconBtn{width:28px !important;height:28px !important;min-width:28px !important;min-height:28px !important;padding:0 !important;border-radius:999px !important;display:inline-flex !important;align-items:center !important;justify-content:center !important;}
+.notesBox .copyIconBtn svg{width:16px !important;height:16px !important;display:block !important;fill:currentColor !important;}
+.notesBox .copyIconBtn path{fill:currentColor !important;}
+
+
+
+/* --- Notes header: put copy button at far right --- */
+.notesBox .notesHeader{display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:flex-start !important; gap:8px !important;}
+.notesBox .notesHeader h2{margin:0 !important; line-height:1 !important;}
+.notesBox .notesHeader #btnCopyNotes{margin-left:auto !important;}
+
+
+
+/* --- Notes: extra spacing under header so textarea doesn't collide with copy button --- */
+.notesBox .notesHeader{margin-bottom:10px !important;}
+
+
+
+/* --- Date d'effet: label in bold + pill for readability --- */
+.row label[for="dateEffet"]{
+  font-weight:800 !important;
+  display:inline-flex;
+  align-items:center;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid var(--softStroke, var(--border2));
+  background:color-mixin(in oklab, var(--card) 86%, transparent);
+  box-shadow:var(--shadowB, none);
+}
+
+
+
+/* --- Date d'effet: bubble group (label + input + Moto + Effacer) --- */
+.dateEffetBubble{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid var(--softStroke, var(--border2));
+  background:color-mixin(in oklab, var(--card) 86%, transparent);
+  box-shadow:var(--shadowB, none);
+}
+
+.dateEffetBubble label[for="dateEffet"]{
+  font-family:inherit !important;
+  font-size:12px !important;
+  font-weight:700 !important;
+  letter-spacing:-0.1px;
+  margin:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  display:inline-flex;
+  align-items:center;
+  white-space:nowrap;
+}
+
+/* Ensure prior single-label pill styles don't override inside the bubble */
+.dateEffetBubble label[for="dateEffet"],
+.dateEffetBubble label[for="dateEffet"] strong{
+  border:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+
+/* Keep the input visually consistent inside the bubble */
+.dateEffetBubble input#dateEffet{
+  width:110px;
+}
+
 </style>
 </head>
 <body>
@@ -777,10 +854,10 @@ body.dark .motoToolBtn.toolBtnActive{
 <div class="muted" id="permitCrmDetail" style="margin-top:6px;"></div>
 </div>
 <div class="row">
-<label for="dateEffet">Date d'effet :</label>
+<span class="dateEffetBubble"><label for="dateEffet">Date d'effet :</label>
 <input id="dateEffet" maxlength="10" type="text"/>
 <div class="motoBtnWrap"> <input class="motoHidden" id="moto" type="checkbox"/> <button aria-pressed="false" class="pillBtn motoToolBtn" id="btnMoto" title="Fenêtre moto : 24 mois" type="button">Moto</button></div>
-<button id="btnClear" type="button">Effacer</button>
+<button id="btnClear" type="button">Effacer</button></span>
 </div>
 
 
@@ -799,8 +876,8 @@ body.dark .motoToolBtn.toolBtnActive{
 <th>Mois</th>
 <th>
 <span class="thInfoWrap">
-                  CRM résiliation
-                  <button aria-label="Info CRM résiliation" class="infoBtn" id="crmInfoBtn" title="Info" type="button">i</button>
+                  Indicatif frise
+                  <button aria-label="Info Indicatif frise" class="infoBtn" id="crmInfoBtn" title="Info" type="button">i</button>
 </span>
 </th>
 </tr>
@@ -929,7 +1006,15 @@ body.dark .motoToolBtn.toolBtnActive{
 </tbody>
 </table>
 </div><div class="result" id="totalMois"></div><div class="result" id="interruptionTxt"></div><div class="card cardSmall notesBox">
-<h2>Notes</h2>
+  <div class="notesHeader">
+    <h2>Notes</h2>
+  <button type="button" class="copyIconBtn" id="btnCopyNotes" title="Copier les notes" aria-label="Copier les notes" onclick="copyNotesToClipboard();">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="fill:currentColor">
+        <path d="M16 1H6c-1.1 0-2 .9-2 2v12h2V3h10V1zm3 4H10c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h9c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H10V7h9v14z"/>
+      </svg>
+    </button>
+    
+  </div>
 <textarea id="notes" placeholder="Notes / observations..."></textarea>
 </div><div class="error" id="errors"></div><div class="sectionToggleRow"><button class="pillBtn sectionToggleBtn" id="btnToggleIndep" type="button">Période précise</button><button class="pillBtn sectionToggleBtn" id="btnToggleHamon" type="button">Hamon</button></div><div class="card cardSmall" id="indepCard" style="display:none;">
 <h2>Calcul indépendant d'une période</h2>
@@ -975,7 +1060,7 @@ body.dark .motoToolBtn.toolBtnActive{
 </div>
 <div aria-live="polite" class="tooltip" id="crmTooltip" role="dialog"></div>
 <script>
-    const LOCAL_VERSION = "0.26";
+    const LOCAL_VERSION = "0.27";
     const VERSION_URL = "https://gist.githubusercontent.com/Lemtosh/ac7fc859fe26f28a17f86fa73c4a4e95/raw/version.json";
 
     function cmpVersion(a, b) {
@@ -1220,6 +1305,38 @@ body.dark .motoToolBtn.toolBtnActive{
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       return `${dd}/${mm}/${d.getFullYear()}`;
     }
+
+    // --- UI friendly date normalization (JJ/MM/YYYY) ---
+    // On blur: if the user typed an accepted date format, we rewrite it as JJ/MM/YYYY.
+    function formatToDDMMYYYYFromInput(raw){
+      const s = String(raw || '').trim();
+      if (!s) return '';
+      const d = parseDateFlexible(s);
+      if (!d) return null; // invalid
+      return formatDateFR(d);
+    }
+
+    function attachAutoFormatDateInput(el){
+      if (!el) return;
+      el.addEventListener('blur', () => {
+        const raw = String(el.value || '').trim();
+        if (!raw) return;
+        const formatted = formatToDDMMYYYYFromInput(raw);
+        if (formatted) {
+          el.value = formatted;
+          // trigger existing reactive logic
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+    }
+
+    function initAutoFormatAllDateInputs(){
+      const ids = ['dateEffet','permitDate','debIndep','finIndep','dateEnvoiHamon'];
+      for (let i=1;i<=20;i++){ ids.push('deb'+i,'fin'+i); }
+      ids.forEach(id => attachAutoFormatDateInput(document.getElementById(id)));
+    }
+
 
     function monthsAndRemainderDays(start, end) {
       if (end < start) return { months: 0, remDays: 0 };
@@ -1897,7 +2014,7 @@ ${formatDateFR(deb)} → ${formatDateFR(fin)}`;
       renderInterruptions('interruptionsMoto', []);
     }
 
-    /* ===== Tooltip CRM résiliation ===== */
+    /* ===== Tooltip Indicatif frise ===== */
     function showTooltipAt(x, y, html){
       const tip = document.getElementById('crmTooltip');
       tip.innerHTML = html;
@@ -1942,7 +2059,7 @@ ${formatDateFR(deb)} → ${formatDateFR(fin)}`;
 
     document.getElementById('crmInfoBtn').addEventListener('click', (e) => {
       const msg =
-        `<strong>CRM résiliation</strong><br>` +
+        `<strong>Indicatif frise</strong><br>` +
         `<em>Champ indicatif : sert uniquement à afficher un repère (CRM) sur la frise.</em>`;
       showTooltipAt(e.clientX, e.clientY, msg);
     });
@@ -1971,6 +2088,7 @@ ${formatDateFR(deb)} → ${formatDateFR(fin)}`;
       renderMetaVersion();
       checkForUpdate();
       initCanvases();
+      initAutoFormatAllDateInputs();
       calculer(); calculIndep(); calculHamon();
       updateCrmToolUI();
       updatePermitCrm();
@@ -2268,6 +2386,47 @@ document.addEventListener('DOMContentLoaded', () => {
   startPeriodicUpdateCheck();
   scheduleDailyRefreshAt0800();
 });
+
+
+function copyNotesToClipboard(){
+  const ta = document.getElementById('notes');
+  const btn = document.getElementById('btnCopyNotes');
+  if(!ta) return;
+  const text = String(ta.value ?? '');
+
+  const feedback = (ok) => {
+    if(!btn) return;
+    const old = btn.title;
+    btn.title = ok ? 'Copié !' : 'Copie impossible';
+    setTimeout(()=>{ btn.title = old; }, 900);
+  };
+
+  const fallback = () => {
+    try{
+      const tmp = document.createElement('textarea');
+      tmp.value = text;
+      tmp.setAttribute('readonly','');
+      tmp.style.position = 'fixed';
+      tmp.style.top = '-1000px';
+      tmp.style.left = '-1000px';
+      document.body.appendChild(tmp);
+      tmp.select();
+      tmp.setSelectionRange(0, tmp.value.length);
+      const ok = document.execCommand && document.execCommand('copy');
+      document.body.removeChild(tmp);
+      feedback(!!ok);
+    }catch(e){
+      feedback(false);
+    }
+  };
+
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(()=>feedback(true)).catch(()=>fallback());
+  }else{
+    fallback();
+  }
+}
+
 </script>
 </body>
 </html>
