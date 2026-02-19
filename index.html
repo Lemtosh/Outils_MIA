@@ -2664,13 +2664,13 @@ function copyRiCommentAuto(){
   const btn = document.getElementById('btnRiCommentAuto');
   const text = buildRiCommentFromGaps(LAST_GAPS_AUTO);
   copyTextToClipboard(text, btn);
-  showRiPopup('Le commentaire a bien été créé et peut être collé.', 2800);
+  showRiPopup('Commentaire prêt à être collé', 2800);
 }
 
 </script>
 
 <dialog id="riPopup" class="riPopup" aria-live="polite">
-  <p id="riPopupText">Le commentaire a bien été créé et peut être collé.</p>
+  <p id="riPopupText">Commentaire prêt à être collé</p>
 </dialog>
 
 </body>
